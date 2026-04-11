@@ -31,47 +31,24 @@ function addToCart(product) {
   }
 
   updateCart();
-  alert("Added to cart");
+  renderCart();
+  alert("✅ Added to cart");
 }
 
 function showCards() {
-  const cardList = document.querySelector(".card-list");
+  if (!cardList) return;
+  cardList.innerHTML = "";
 
-  productList.forEach((product) => {
-    const div = document.createElement("div");
-    div.classList.add("book-card");
-
-    div.innerHTML = `
-      <img src="${product.image}">
-      <h4>${product.name}</h4>
-      <p>₹${product.price}/day</p>
-      <button>Add to cart</button>
-    `;
-
-    div.querySelector("button").onclick = () => addToCart(product);
-
-    cardList.appendChild(div);
-  });
-}
-
-fetch("products.json")
-  .then((res) => res.json())
-  .then((data) => {
-    productList = data;
-    showCards();
-  });
-
-function showCards() {
   productList.forEach((product) => {
     const bookCard = document.createElement("div");
     bookCard.classList.add("book-card");
 
     bookCard.innerHTML = `
       <div class="card-image">
-        <img src="${product.image}">
+        <img src="${product.image}" alt="${product.name}">
       </div>
       <h4>${product.name}</h4>
-      <h4>₹${product.price}/day</h4>
+      <p class="price">₹${product.price}/day</p>
       <button class="btn">Add to cart</button>
     `;
 
@@ -83,13 +60,66 @@ function showCards() {
   });
 }
 
+function renderCart() {
+  if (!cartList) return;
+
+  cartList.innerHTML = "";
+  cartValue.textContent = cartProduct.length;
+
+  if (cartProduct.length === 0) {
+    cartList.innerHTML =
+      "<p style='padding: 20px; text-align: center;'>Cart is empty</p>";
+    if (cartTotal) cartTotal.textContent = "₹0";
+    return;
+  }
+
+  let total = 0;
+
+  cartProduct.forEach((item, index) => {
+    const itemDiv = document.createElement("div");
+    itemDiv.classList.add("cart-item");
+    itemDiv.innerHTML = `
+      <div class="cart-item-info">
+        <h4>${item.name}</h4>
+        <p>₹${item.price}/day × ${item.quantity}</p>
+      </div>
+      <div class="cart-item-actions">
+        <button onclick="removeFromCart(${index})">Remove</button>
+      </div>
+    `;
+    cartList.appendChild(itemDiv);
+    total += item.price * item.quantity;
+  });
+
+  if (cartTotal) cartTotal.textContent = `₹${total.toFixed(2)}`;
+}
+
+function removeFromCart(index) {
+  cartProduct.splice(index, 1);
+  updateCart();
+  renderCart();
+}
+
+// Cart panel toggle
+if (cartIcon) {
+  cartIcon.addEventListener("click", (e) => {
+    e.preventDefault();
+    cartTab.classList.toggle("active");
+  });
+}
+
+if (closeBtn) {
+  closeBtn.addEventListener("click", () => {
+    cartTab.classList.remove("active");
+  });
+}
+
+// Load products
 fetch("products.json")
   .then((res) => res.json())
   .then((data) => {
-    productList = data.map((p) => ({
-      ...p,
-      price: parseFloat(p.price.replace(/[^\d.]/g, "")),
-    }));
+    productList = data;
     showCards();
     renderCart();
-  });
+  })
+  .catch((err) => console.error("Error loading products:", err));
