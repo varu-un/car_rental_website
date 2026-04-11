@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="auth.css" />
+  </head>
+  <body>
+    <div class="auth-container flex">
+      <form class="auth-form" id="signupForm">
+        <h2>Create Account</h2>
+
+        <input type="text" placeholder="Full Name" id="fullName" required />
+        <input type="email" placeholder="Email" id="email" required />
+        <input type="password" placeholder="Password" id="password" required />
+
+        <label class="flex gap-1">
+          <input type="checkbox" id="agreement" />
+          I agree to terms
+        </label>
+
+        <button class="btn">Sign Up</button>
+
+        <p>Already have an account? <a href="login.html">Login</a></p>
+      </form>
+    </div>
+
+    <script src="auth.js"></script>
+  </body>
+</html>

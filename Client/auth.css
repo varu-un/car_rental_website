@@ -1,0 +1,36 @@
+.auth-container {
+  height: 100vh;
+  justify-content: center;
+  align-items: center;
+  background: #f8f8f8;
+}
+
+.auth-form {
+  background: white;
+  padding: 2rem;
+  width: 350px;
+  border-radius: 10px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+}
+
+.auth-form h2 {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.auth-form input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.auth-form button {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.auth-form {
+    backdrop-filter: blur(10px);
+}

@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <section class="wrapper">
+      <h2>My Bookings</h2>
+      <div id="bookings"></div>
+    </section>
+
+    <script>
+      const token = localStorage.getItem("token");
+
+      fetch("http://localhost:5000/api/booking/my", {
+        headers: { Authorization: token },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          const container = document.getElementById("bookings");
+
+          data.forEach((b) => {
+            const div = document.createElement("div");
+            div.classList.add("book-card");
+
+            div.innerHTML = `
+      <h3>Booking</h3>
+      <p>Days: ${b.days}</p>
+      <p>Total: ₹${b.total}</p>
+      <p>Status: ${b.status}</p>
+    `;
+
+            container.appendChild(div);
+          });
+        });
+    </script>
+  </body>
+</html>

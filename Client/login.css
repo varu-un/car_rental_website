@@ -1,0 +1,76 @@
+/* LOGIN PAGE STYLING */
+
+.auth-container {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: var(--eye-ball);
+}
+
+/* LOGIN BOX */
+.auth-form {
+    background: var(--pure-white);
+    padding: 2.5rem 2rem;
+    width: 360px;
+    max-width: 100%;
+    border-radius: 1.5rem;
+
+    border: 1px solid var(--gold-finger);
+
+    box-shadow:
+        rgba(0, 0, 0, 0.05) 8px 8px 8px,
+        rgba(0, 0, 0, 0.05) 8px 8px 8px inset;
+
+    text-align: center;
+}
+
+/* TITLE */
+.auth-form h2 {
+    margin-bottom: 1.5rem;
+    color: var(--lead);
+}
+
+/* INPUT FIELDS */
+.auth-form input {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 0.7rem;
+    border: 1px solid #ddd;
+    font-size: 1rem;
+    transition: 0.3s;
+}
+
+/* INPUT FOCUS */
+.auth-form input:focus {
+    outline: none;
+    border-color: var(--gold-finger);
+    box-shadow: 0 0 5px rgba(255, 174, 0, 0.3);
+}
+
+/* BUTTON */
+.auth-form .btn {
+    width: 100%;
+    margin-top: 10px;
+}
+
+/* TEXT */
+.auth-form p {
+    margin-top: 1rem;
+    font-size: 0.95rem;
+}
+
+/* LINK */
+.auth-form a {
+    color: var(--gold-finger);
+    font-weight: 500;
+}
+
+.auth-form a:hover {
+    text-decoration: underline;
+}
+
+.auth-form {
+    backdrop-filter: blur(10px);
+}
