@@ -1,11 +1,12 @@
 document.addEventListener("DOMContentLoaded", () => {
+  const bookingForm = document.getElementById("bookingForm");
   const summaryList = document.getElementById("summaryList");
   const totalPriceEl = document.getElementById("totalPrice");
   const pickupDate = document.getElementById("pickupDate");
   const returnDate = document.getElementById("returnDate");
   const daysInfo = document.getElementById("daysInfo");
 
-  let cart = JSON.parse(localStorage.getItem("cart")) || [];
+  const cart = JSON.parse(localStorage.getItem("cart")) || [];
 
   const today = new Date().toISOString().split("T")[0];
   pickupDate.min = today;
@@ -25,15 +26,16 @@ document.addEventListener("DOMContentLoaded", () => {
     summaryList.innerHTML = "";
 
     if (cart.length === 0) {
-      summaryList.innerHTML = "<p>No cars selected</p>";
-      totalPriceEl.textContent = "₹0";
+      summaryList.innerHTML = `<p class="empty-message">No cars selected</p>`;
+      totalPriceEl.textContent = "₹0.00";
+      daysInfo.textContent = "Your cart is empty";
       return;
     }
 
     const days = getDays();
 
     if (days <= 0) {
-      totalPriceEl.textContent = "₹0";
+      totalPriceEl.textContent = "₹0.00";
       daysInfo.textContent = "Select valid dates";
       return;
     }
@@ -42,18 +44,24 @@ document.addEventListener("DOMContentLoaded", () => {
     daysInfo.textContent = `${days} day(s) rental`;
 
     cart.forEach((item) => {
-      const itemTotal = item.price * item.quantity * days;
+      const quantity = item.quantity || 1;
+      const itemTotal = item.price * quantity * days;
       total += itemTotal;
 
       const div = document.createElement("div");
       div.classList.add("summary-item");
 
       div.innerHTML = `
-        <div>
-          <strong>${item.name}</strong><br>
-          ₹${item.price}/day × ${item.quantity} × ${days}
+        <div class="summary-item-left">
+          <div class="summary-item-image">
+            <img src="${item.image}" alt="${item.name}">
+          </div>
+          <div class="summary-item-details">
+            <strong>${item.name}</strong>
+            <p>₹${item.price}/day × ${quantity} × ${days} day(s)</p>
+          </div>
         </div>
-        <div>₹${itemTotal.toFixed(2)}</div>
+        <div class="summary-item-price">₹${itemTotal.toFixed(2)}</div>
       `;
 
       summaryList.appendChild(div);
@@ -71,53 +79,59 @@ document.addEventListener("DOMContentLoaded", () => {
 
   renderCart();
 
-  // 🔥 PAYMENT HANDLER
-  document
-    .getElementById("bookingForm")
-    .addEventListener("submit", async (e) => {
-      e.preventDefault();
+  bookingForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-      const amount = parseFloat(
-        totalPriceEl.textContent.replace(/[^\d.]/g, ""),
-      );
+    const amount = parseFloat(totalPriceEl.textContent.replace(/[^\d.]/g, ""));
 
-      if (!amount || amount <= 0) {
-        alert("Please select valid dates");
+    if (!amount || amount <= 0) {
+      alert("Please select valid dates");
+      return;
+    }
+
+    const userData = {
+      name: document.getElementById("fullName").value.trim(),
+      email: document.getElementById("email").value.trim(),
+      phone: document.getElementById("phone").value.trim(),
+      location: document.getElementById("location").value.trim(),
+      amount,
+    };
+
+    try {
+      const res = await fetch("http://localhost:5000/create-order", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ amount }),
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error("Create order failed:", errorText);
+        alert("Unable to create order.");
         return;
       }
 
-      const userData = {
-        name: document.getElementById("fullName").value,
-        email: document.getElementById("email").value,
-        phone: document.getElementById("phone").value,
-        location: document.getElementById("location").value,
-        amount: amount,
-      };
+      const order = await res.json();
+      console.log("Order response:", order);
 
-      try {
-        // 🔥 STEP 1: CREATE ORDER
-        const res = await fetch("http://localhost:5000/create-order", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ amount }),
-        });
+      if (!order || !order.id || !order.amount) {
+        console.error("Invalid order response:", order);
+        alert("Invalid order received from server.");
+        return;
+      }
 
-        const order = await res.json();
+      const options = {
+        key: "rzp_test_ScFjfRPvIvaxaK",
+        amount: order.amount,
+        currency: "INR",
+        order_id: order.id,
+        name: "Car Rentals",
+        description: "Booking Payment",
 
-        // 🔥 STEP 2: OPEN RAZORPAY
-        const options = {
-          key: "YOUR_KEY_ID",
-          amount: order.amount,
-          currency: "INR",
-          order_id: order.id,
-
-          name: "Car Rentals",
-          description: "Booking Payment",
-
-          handler: async function (response) {
-            // 🔥 STEP 3: VERIFY PAYMENT
+        handler: async function (response) {
+          try {
             const verifyRes = await fetch(
               "http://localhost:5000/verify-payment",
               {
@@ -133,33 +147,49 @@ document.addEventListener("DOMContentLoaded", () => {
             );
 
             const result = await verifyRes.json();
+            console.log("Verify response:", result);
 
             if (result.status === "success") {
-              alert("✅ Payment Successful & Booking Saved");
-
+              alert("Payment successful and booking saved");
               localStorage.removeItem("cart");
               window.location.href = "success.html";
             } else {
-              alert("❌ Payment verification failed");
+              alert("Payment verification failed");
             }
-          },
+          } catch (verifyError) {
+            console.error("Verification error:", verifyError);
+            alert("Payment verification failed.");
+          }
+        },
 
-          prefill: {
-            name: userData.name,
-            email: userData.email,
-            contact: userData.phone,
-          },
+        prefill: {
+          name: userData.name,
+          email: userData.email,
+          contact: userData.phone,
+        },
 
-          theme: {
-            color: "#f9a826",
-          },
-        };
+        theme: {
+          color: "#f9a826",
+        },
 
-        const rzp = new Razorpay(options);
-        rzp.open();
-      } catch (err) {
-        console.error(err);
-        alert("Payment failed. Try again.");
-      }
-    });
+        modal: {
+          ondismiss: function () {
+            console.log("Razorpay popup closed by user");
+          },
+        },
+      };
+
+      const rzp = new Razorpay(options);
+
+      rzp.on("payment.failed", function (response) {
+        console.error("Payment failed:", response.error);
+        alert(response.error.description || "Payment Failed");
+      });
+
+      rzp.open();
+    } catch (error) {
+      console.error("Checkout error:", error);
+      alert("Payment failed. Try again.");
+    }
+  });
 });

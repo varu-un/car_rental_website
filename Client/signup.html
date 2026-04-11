@@ -2,29 +2,106 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Sign Up</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign Up | Car Rentals</title>
+
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="auth.css" />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
   </head>
   <body>
-    <div class="auth-container flex">
-      <form class="auth-form" id="signupForm">
-        <h2>Create Account</h2>
+    <div class="auth-bg auth-glow-1"></div>
+    <div class="auth-bg auth-glow-2"></div>
 
-        <input type="text" placeholder="Full Name" id="fullName" required />
-        <input type="email" placeholder="Email" id="email" required />
-        <input type="password" placeholder="Password" id="password" required />
+    <section class="auth-page">
+      <div class="auth-shell">
+        <div class="auth-side">
+          <a href="index.html" class="auth-logo">Car Rentals</a>
+          <div class="auth-tag">Create account</div>
 
-        <label class="flex gap-1">
-          <input type="checkbox" id="agreement" />
-          I agree to terms
-        </label>
+          <h1>Join now and start renting with style and ease.</h1>
 
-        <button class="btn">Sign Up</button>
+          <p>
+            Create your account to unlock quick booking, cleaner checkout, and a
+            better car rental experience on every device.
+          </p>
 
-        <p>Already have an account? <a href="login.html">Login</a></p>
-      </form>
-    </div>
+          <div class="auth-points">
+            <div class="point-card">
+              <i class="fa-solid fa-user-check"></i>
+              <span>Simple registration flow</span>
+            </div>
+
+            <div class="point-card">
+              <i class="fa-solid fa-credit-card"></i>
+              <span>Checkout-inspired premium UI</span>
+            </div>
+
+            <div class="point-card">
+              <i class="fa-solid fa-mobile-screen-button"></i>
+              <span>Fully mobile friendly</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="auth-form-card">
+          <form class="auth-form" id="signupForm">
+            <div class="form-top">
+              <h2>Create Account</h2>
+              <p>Fill in your details to get started.</p>
+            </div>
+
+            <div class="input-box">
+              <label for="fullName">Full Name</label>
+              <input
+                type="text"
+                id="fullName"
+                placeholder="Enter your full name"
+                required
+              />
+            </div>
+
+            <div class="input-box">
+              <label for="email">Email Address</label>
+              <input
+                type="email"
+                id="email"
+                placeholder="Enter your email"
+                required
+              />
+            </div>
+
+            <div class="input-box">
+              <label for="password">Password</label>
+              <input
+                type="password"
+                id="password"
+                placeholder="Create a password"
+                required
+              />
+            </div>
+
+            <label class="agree-box">
+              <input type="checkbox" id="agreement" required />
+              <span>I agree to the terms and privacy policy.</span>
+            </label>
+
+            <button class="btn auth-btn" type="submit">Sign Up</button>
+
+            <p class="switch-text">
+              Already have an account?
+              <a href="login.html">Login</a>
+            </p>
+          </form>
+        </div>
+      </div>
+    </section>
 
     <script src="auth.js"></script>
   </body>

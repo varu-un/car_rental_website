@@ -3,7 +3,7 @@ const Razorpay = require("razorpay");
 const cors = require("cors");
 const crypto = require("crypto");
 const mongoose = require("mongoose");
-const Booking = require("./models/booking");
+const Booking = require("./models/Booking");
 require("dotenv").config();
 
 const app = express();

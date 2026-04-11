@@ -1,415 +1,386 @@
 <!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Car Rentals</title>
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Car Rentals</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
-    integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
-    crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.css" />
-  <link rel="stylesheet" href="style.css">
-  <script defer src="main.js"></script>
-  <!-- <link rel="stylesheet" href="mstyle.css" /> -->
-</head>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300;400;500;700;800&display=swap"
+      rel="stylesheet"
+    />
 
-<body>
-  <!-- HEADER PART -->
-  <header>
-    <nav class="navbar flex between wrapper">
-      <a href="#" class="logo">Car Rentals</a>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
 
-      <!-- DEKSTOP VIEW -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.css"
+    />
 
-      <ul class="navlist flex gap-3">
-        <li><a href="#">Home</a></li>
-        <li><a href="#">Cars</a></li>
-        <li><a href="#">Services</a></li>
-        <li><a href="#">About</a></li>
-        <li><a href="#">Contact Us</a></li>
-      </ul>
-      <div class="desktop-action flex gap-2">
-        <a href="#" class="cart-icon">
-          <i class="fa-solid fa-truck-fast"></i>
-          <span class="cart-value">0</span>
-        </a>
-        <a href="login.html" class="btn">Sign in &nbsp;
-          <i class="fa-solid fa-car-tunnel"></i>
-        </a>
-        <a href="#" class="hamburger">
-          <i class="fa-solid fa-bars"></i>
-        </a>
-      </div>
+    <link rel="stylesheet" href="style.css" />
+    <script defer src="main.js"></script>
+  </head>
+  <body>
+    <div class="page-glow glow-1"></div>
+    <div class="page-glow glow-2"></div>
 
-      <!-- MOBILE VIEW -->
+    <header class="site-header">
+      <nav class="navbar wrapper">
+        <a href="#home" class="logo">Car Rentals</a>
 
-      <ul class="mobile-menu">
-        <li><a href="#">Home</a></li>
-        <li><a href="#">Cars</a></li>
-        <li><a href="#">Services</a></li>
-        <li><a href="#">About</a></li>
-        <li><a href="#">Contact Us</a></li>
-        <li>
-          <a href="#" class="btn">Sign in &nbsp;
-            <i class="fa-solid fa-car-tunnel"></i>
+        <ul class="navlist" id="desktopNav">
+          <li><a href="#home" class="nav-link active-pill">Home</a></li>
+          <li><a href="#cars" class="nav-link">Cars</a></li>
+          <li><a href="#services" class="nav-link">Services</a></li>
+          <li><a href="#reviews" class="nav-link">About</a></li>
+          <li><a href="#contact" class="nav-link">Contact Us</a></li>
+        </ul>
+
+        <div class="desktop-action">
+          <a href="#" class="cart-icon glass-chip" aria-label="Open cart">
+            <i class="fa-solid fa-truck-fast"></i>
+            <span class="cart-value">1</span>
           </a>
-        </li>
-      </ul>
-    </nav>
-  </header>
-  <!-- SECTIONS PART -->
-  <main>
-    <section>
-      <div class="hero-section flex wrapper">
-        <div class="content">
-          <h1>
-            Rent Your
-            <span>Cars</span> today!
-          </h1>
-          <p class="para">
-            Enjoy the freedom of the open road with our <br>
-            hassle-free car rental service.
-          </p>
-          <div class="flex gap-2">
-            <a href="#" class="btn">Book Now</a>
-            <a href="#" class="social-icon">
-              <i class="fa-brands fa-x-twitter"></i>
-            </a>
-            <a href="#" class="social-icon">
-              <i class="fa-brands fa-instagram"></i>
-            </a>
-            <a href="#" class="social-icon">
-              <i class="fa-brands fa-facebook"></i>
-            </a>
-            <a href="#" class="social-icon">
-              <i class="fa-brands fa-google-plus-g"></i>
-            </a>
 
-          </div>
+          <a href="login.html" class="btn sign-btn">
+            Sign in
+            <i class="fa-solid fa-car-side"></i>
+          </a>
 
+          <button class="hamburger" type="button" aria-label="Open menu">
+            <i class="fa-solid fa-bars"></i>
+          </button>
         </div>
-        <div class="image-container1">
-          <img src="images/minions.png" margin-right="100%">
-        </div>
+      </nav>
 
-
-    </section>
-    <section>
-      <div class="wrapper p-top">
-        <div class="text-center">
-          <div class="text-center">
-            <h5>Our Services</h5>
-            <h2>How does it work?</h2>
-          </div>
-
-          <div class="flex text-center mt-4 gap-4">
-            <div class="service-card">
-              <div class="image-container">
-                <img src="images/cropped_booking-removebg-preview.png">
-              </div>
-              <h3>Easy to Book</h3>
-              <p>Skip the paperwork-go digital and drive faster.</p>
-            </div>
-            <div class="service-card">
-              <div class="image-container">
-                <img src="images/fast_car-removebg-preview.png">
-              </div>
-              <h3>Choose your ride</h3>
-              <p>From budget to premium-we've got every car you need.</p>
-            </div>
-            <div class="service-card">
-              <div class="image-container">
-                <img src="images/cropped_star_-removebg-preview.png">
-              </div>
-              <h3>Well maintained</h3>
-              <p>Clean, serviced and ready-your perfect ride awaits.</p>
-            </div>
-
-          </div>
-        </div>
+      <div class="mobile-menu wrapper">
+        <a href="#home" class="mobile-link active-pill">Home</a>
+        <a href="#cars" class="mobile-link">Cars</a>
+        <a href="#services" class="mobile-link">Services</a>
+        <a href="#reviews" class="mobile-link">About</a>
+        <a href="#contact" class="mobile-link">Contact Us</a>
+        <a href="login.html" class="btn mobile-sign-btn">
+          Sign in
+          <i class="fa-solid fa-car-side"></i>
+        </a>
       </div>
-    </section>
+    </header>
 
-    <section>
-      <div class="wrapper p-top">
-        <div class="text-center">
+    <main>
+      <section id="home" class="hero-section wrapper">
+        <div class="hero-content">
+          <div class="hero-badge glass-chip">
+            <i class="fa-solid fa-sparkles"></i>
+            Premium rides. Easy bookings.
+          </div>
+
+          <h1>
+            Rent Your <span>Cars</span><br />
+            today!
+          </h1>
+
+          <p class="para">
+            Enjoy the freedom of the open road with our hassle-free car rental
+            service. Fast booking, stylish rides, smooth checkout, and comfort
+            you can trust.
+          </p>
+
+          <div class="hero-actions">
+            <a href="#cars" class="btn">Book Now</a>
+
+            <div class="social-group">
+              <a href="#" class="social-icon"
+                ><i class="fa-brands fa-x-twitter"></i
+              ></a>
+              <a href="#" class="social-icon"
+                ><i class="fa-brands fa-instagram"></i
+              ></a>
+              <a href="#" class="social-icon"
+                ><i class="fa-brands fa-facebook"></i
+              ></a>
+              <a href="#" class="social-icon"
+                ><i class="fa-brands fa-google-plus-g"></i
+              ></a>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-visual">
+          <div class="hero-image-card">
+            <img
+              src="images/wp16126503-yellow-car-4k-wallpapers.jpg"
+              alt="Car rentals hero image"
+            />
+          </div>
+        </div>
+      </section>
+
+      <section id="services" class="section wrapper">
+        <div class="section-heading center">
+          <h5>Our Services</h5>
+          <h2>How does it work?</h2>
+        </div>
+
+        <div class="services-grid">
+          <article class="service-card glass-card">
+            <div class="image-container">
+              <img
+                src="images/cropped_booking-removebg-preview.png"
+                alt="Easy booking"
+              />
+            </div>
+            <h3>Easy Booking</h3>
+            <p>
+              Skip the paperwork, go digital, and reserve your ride in minutes.
+            </p>
+          </article>
+
+          <article class="service-card glass-card">
+            <div class="image-container">
+              <img
+                src="images/fast_car-removebg-preview.png"
+                alt="Choose your ride"
+              />
+            </div>
+            <h3>Choose Your Ride</h3>
+            <p>
+              From budget-friendly cars to premium comfort, pick what fits you
+              best.
+            </p>
+          </article>
+
+          <article class="service-card glass-card">
+            <div class="image-container">
+              <img
+                src="images/cropped_star_-removebg-preview.png"
+                alt="Well maintained cars"
+              />
+            </div>
+            <h3>Well Maintained</h3>
+            <p>
+              Clean, serviced, and road-ready cars for a smooth rental
+              experience.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section id="cars" class="section wrapper">
+        <div class="section-heading center">
           <h5>Our Cars</h5>
           <h2>Choose your ride</h2>
         </div>
 
-        <div class="card-list text-center flex mt-4 gap-2">
-          <!-- <div class="book-card">
-                <div class="card-image">
-                  <img src="images/Screenshot_2026-03-31_015703-removebg-preview.png" width="100%" height="100% ">
-                </div>
-                <h4>
-                  Tata Sierra
-                </h4>
-                <h4 class="price">₹5000/day</h4>
-                <a href="#" class="btn">Add to cart</a>  
-              </div> -->
+        <div class="card-list"></div>
 
-
-        </div>
-
-        <!-- CARD TAB -->
-        <div class="cart-tab">
-          
+        <aside class="cart-tab">
           <h3>Your Cars</h3>
-          
 
-          <div class="cart-list">
-            <!-- <div class="item">
-              <div class="item-image">
-                <img src="images/Screenshot_2026-03-31_015703-removebg-preview.png">
-              </div>
-              <div>
-                <h4>Tata Sierra</h4>
-                <h4 class="item-total">₹5000/day</h4>
-              </div>
-              <div class="flex">
-                <a href="#" class="quantity-btn">
-                  <i class="fa-solid fa-minus"></i>
-                </a>
-                <h4 class="quantity-value">1</h4>
-                <a href="#" class="quantity-btn">
-                  <i class="fa-solid fa-plus"></i>
-                </a>
-              </div>
-            </div> -->
-          </div>
-
+          <div class="cart-list"></div>
 
           <div class="total-container">
             <h4>Total:</h4>
             <h4 class="cart-total">₹0.00</h4>
-            <p id="daysInfo"></p>
           </div>
 
-          <div class="btn-container flex gap-2">
+          <div class="btn-container">
             <a href="#" class="btn close-btn">Close</a>
             <a href="checkout.html" class="btn">Checkout</a>
           </div>
-        </div>
-      </div>
-    </section>
+        </aside>
+      </section>
 
-    <section>
-      <div class="wrapper p-top flex gap-4">
-        <div class="image-container">
-
-          <img src="images/about us.png">
+      <section id="reviews" class="section wrapper review-section">
+        <div class="about-image">
+          <div class="about-image-card">
+            <img src="images/about us.png" alt="About us" />
+          </div>
         </div>
+
         <div class="review-container">
-          <h5>Our reviews</h5>
+          <h5>Our Reviews</h5>
           <h2>What our customers say</h2>
 
-
           <div class="swiper mySwiper">
-            <div class="swiper-wrapper mt-4">
+            <div class="swiper-wrapper">
               <div class="swiper-slide">
-                <div class="flex gap-2">
-                  <div class="profile">
-                    <img src="images/profile1.jpeg">
-                  </div>
-                  <div>
-                    <h4>John Doe</h4>
-                    <div class="mt-half">
-                      <i class="fa-solid fa-star"></i>
-                      <i class="fa-solid fa-star"></i>
-                      <i class="fa-solid fa-star"></i>
-                      <i class="fa-solid fa-star"></i>
+                <div class="review-card glass-card">
+                  <div class="review-top">
+                    <div class="profile">
+                      <img src="images/profile1.jpeg" alt="Customer review" />
                     </div>
-
+                    <div>
+                      <h4>John Doe</h4>
+                      <div class="stars">
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                      </div>
+                    </div>
                   </div>
+                  <p>
+                    “Great service, easy booking process, and a wide selection
+                    of cars. Highly recommend!”
+                  </p>
                 </div>
-                <p class="para">
-                  "Great service, easy booking process, and a wide selection of cars. Highly recommend!"</p>
-
               </div>
 
               <div class="swiper-slide">
-                <div class="flex gap-2">
-                  <div class="profile">
-                    <img src="images/profile2.jpeg">
-                  </div>
-                  <div>
-                    <h4>Jane Smith</h4>
-                    <div class="mt-half">
-                      <i class="fa-solid fa-star"></i>
-                      <i class="fa-solid fa-star"></i>
-                      <i class="fa-solid fa-star"></i>
-                      <i class="fa-solid fa-star"></i>
+                <div class="review-card glass-card">
+                  <div class="review-top">
+                    <div class="profile">
+                      <img src="images/profile2.jpeg" alt="Customer review" />
                     </div>
-
+                    <div>
+                      <h4>Jane Smith</h4>
+                      <div class="stars">
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                      </div>
+                    </div>
                   </div>
+                  <p>
+                    “Excellent customer service and a great variety of vehicles
+                    to choose from. Will definitely use again!”
+                  </p>
                 </div>
-                <p class="para">
-                  "Excellent customer service and a great variety of vehicles to choose from. Will definitely use
-                  again!"</p>
-
               </div>
 
               <div class="swiper-slide">
-                <div class="flex gap-2">
-                  <div class="profile">
-                    <img src="images/profile3.jpeg">
-                  </div>
-                  <div>
-                    <h4>Bob Johnson</h4>
-                    <div class="mt-half">
-                      <i class="fa-solid fa-star"></i>
-                      <i class="fa-solid fa-star"></i>
-                      <i class="fa-solid fa-star"></i>
-                      <i class="fa-solid fa-star"></i>
+                <div class="review-card glass-card">
+                  <div class="review-top">
+                    <div class="profile">
+                      <img src="images/profile3.jpeg" alt="Customer review" />
                     </div>
-
+                    <div>
+                      <h4>Bob Johnson</h4>
+                      <div class="stars">
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                      </div>
+                    </div>
                   </div>
+                  <p>
+                    “Outstanding experience! The car was in perfect condition
+                    and the staff was very helpful.”
+                  </p>
                 </div>
-                <p class="para">
-                  "Outstanding experience! The car was in perfect condition and the staff was very helpful."</p>
-
               </div>
-
-
             </div>
-            <div class="flex between">
-              <a href="#" class="arrow" id="prev">
+
+            <div class="review-nav">
+              <button class="arrow" id="prev" type="button">
                 <i class="fa-solid fa-arrow-left"></i>
-              </a>
-              <a href="#" class="arrow" id="next">
+              </button>
+              <button class="arrow" id="next" type="button">
                 <i class="fa-solid fa-arrow-right"></i>
-              </a>
+              </button>
             </div>
           </div>
-
         </div>
-      </div>
-    </section>
+      </section>
 
-    <section>
-      <div class="wrapper p-top">
-        <div class="app-container flex between">
-          <div class="image-container">
-            <img src="images/mobile app.png">
+      <section class="section wrapper">
+        <div class="app-container glass-card">
+          <div class="app-image">
+            <img src="images/mobile app.png" alt="Mobile app" />
           </div>
 
-          <div class="content">
+          <div class="app-content">
             <h5>Get the app</h5>
-            <h2>Book your ride<br> on the go!</h2>
-            <p class="para">Download our app for a seamless car rental experience.<br> Book, manage, and enjoy your ride
-              anytime, anywhere.</p>
+            <h2>Book your ride on the go!</h2>
+            <p class="para">
+              Download our app for a seamless car rental experience. Book,
+              manage, and enjoy your ride anytime, anywhere.
+            </p>
             <a href="#" class="btn">Download Now</a>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <section>
-      <div class="wrapper p-top">
-        <div class="text-center">
-          <h5>Our Subscribe</h5>
+      <section class="section wrapper">
+        <div class="section-heading center">
+          <h5>Subscribe</h5>
           <h2>Subscribe to Our Newsletter</h2>
-          <p class="para m-auto">Stay updated with our latest offers and news. Subscribe to our newsletter and never
-            miss out on
-            exclusive deals!
+          <p class="para para-center">
+            Stay updated with our latest offers and news. Subscribe now and
+            never miss an exclusive deal.
           </p>
-
-          <label class="input-container flex">
-            <input type="email" name="email" id="email" placeholder="Enter your email address" autocomplete="off">
-            <a href="#" class="btn">Subscribe</a>
-          </label>
-
-
         </div>
-      </div>
-    </section>
-  </main>
 
-  <!-- FOOTER PART -->
-  <footer>
-    <div class="footer-container">
-      <div class="flex wrapper gap-4">
+        <div class="input-container glass-card">
+          <input
+            type="email"
+            placeholder="Enter your email address"
+            autocomplete="off"
+          />
+          <a href="#" class="btn">Subscribe</a>
+        </div>
+      </section>
+    </main>
+
+    <footer id="contact" class="footer-container">
+      <div class="wrapper footer-grid">
         <div class="footer-wrapper">
-          <a href="#" class="logo">Car Rentals</a>
+          <a href="#home" class="logo">Car Rentals</a>
           <p class="mt-one-half">
-            Enjoy the freedom of the open road with our <br>
-            hassle-free car rental service.
+            Enjoy the freedom of the open road with our hassle-free car rental
+            service.
           </p>
-          <div class="flex gap-2 mt-one-half">
 
-            <a href="#" class="social-icon">
-              <i class="fa-brands fa-x-twitter"></i>
-            </a>
-            <a href="#" class="social-icon">
-              <i class="fa-brands fa-instagram"></i>
-            </a>
-            <a href="#" class="social-icon">
-              <i class="fa-brands fa-facebook"></i>
-            </a>
-            <a href="#" class="social-icon">
-              <i class="fa-brands fa-google-plus-g"></i>
-            </a>
-
+          <div class="footer-socials">
+            <a href="#" class="social-icon"
+              ><i class="fa-brands fa-x-twitter"></i
+            ></a>
+            <a href="#" class="social-icon"
+              ><i class="fa-brands fa-instagram"></i
+            ></a>
+            <a href="#" class="social-icon"
+              ><i class="fa-brands fa-facebook"></i
+            ></a>
+            <a href="#" class="social-icon"
+              ><i class="fa-brands fa-google-plus-g"></i
+            ></a>
           </div>
-
         </div>
-        <ul class="footer-wrapper">
-          <li>
-            <h4>Quick Links</h4>
-          </li>
-          <li class="mt-one-half">
-            <a href="#">Premium</a>
-          </li>
-          <li class="mt-one-half">
-            <a href="#">Budget</a>
-          </li>
-          <li class="mt-one-half">
-            <a href="#">7-Seaters</a>
-          </li>
 
-        </ul>
-        <ul class="footer-wrapper">
-          <li>
-            <h4>Company</h4>
-          </li>
-          <li class="mt-one-half">
-            <a href="#">Why Us</a>
-          </li>
-          <li class="mt-one-half">
-            <a href="#">Partner with Us</a>
-          </li>
-          <li class="mt-one-half">
-            <a href="#">About Us</a>
-          </li>
-          <li class="mt-one-half">
-            <a href="#">FAQ's</a>
-          </li>
+        <div class="footer-wrapper">
+          <h4>Quick Links</h4>
+          <a href="#">Premium</a>
+          <a href="#">Budget</a>
+          <a href="#">7-Seaters</a>
+        </div>
 
-        </ul>
-        <ul class="footer-wrapper">
-          <li>
-            <h4>Support</h4>
-          </li>
-          <li class="mt-one-half">
-            <a href="#">Account</a>
-          </li>
-          <li class="mt-one-half">
-            <a href="#">Support Center</a>
-          </li>
-          <li class="mt-one-half">
-            <a href="#">Feedback</a>
-          </li>
-          <li class="mt-one-half">
-            <a href="#">Contacts</a>
-          </li>
+        <div class="footer-wrapper">
+          <h4>Company</h4>
+          <a href="#">Why Us</a>
+          <a href="#">Partner with Us</a>
+          <a href="#">About Us</a>
+          <a href="#">FAQ's</a>
+        </div>
 
-        </ul>
-
+        <div class="footer-wrapper">
+          <h4>Support</h4>
+          <a href="#">Account</a>
+          <a href="#">Support Center</a>
+          <a href="#">Feedback</a>
+          <a href="#">Contacts</a>
+        </div>
       </div>
-  </footer>
-  <script src="https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.js"></script>
-</body>
+    </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.js"></script>
+  </body>
 </html>
