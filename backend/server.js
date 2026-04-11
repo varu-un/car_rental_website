@@ -4,6 +4,7 @@ const cors = require("cors");
 const crypto = require("crypto");
 const mongoose = require("mongoose");
 const Booking = require("./models/booking");
+require("dotenv").config();
 
 const app = express();
 
@@ -12,16 +13,14 @@ app.use(express.json());
 
 // 🔥 MongoDB
 mongoose
-  .connect(
-    "mongodb+srv://pratyushtripathy001:Pratyush%402003@cluster0.zc3cfzy.mongodb.net/carRental?retryWrites=true&w=majority",
-  )
+  .connect(process.env.MONGODB_URI)
   .then(() => console.log("✅ MongoDB Connected"))
   .catch((err) => console.log("❌ DB Error:", err));
 
 // 🔥 Razorpay
 const razorpay = new Razorpay({
-  key_id: "YOUR_KEY_ID",
-  key_secret: "YOUR_KEY_SECRET",
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
 // ✅ CREATE ORDER
@@ -50,7 +49,7 @@ app.post("/verify-payment", async (req, res) => {
     const body = razorpay_order_id + "|" + razorpay_payment_id;
 
     const expectedSignature = crypto
-      .createHmac("sha256", "YOUR_KEY_SECRET")
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
       .update(body)
       .digest("hex");
 
@@ -84,6 +83,7 @@ app.get("/bookings", async (req, res) => {
 });
 
 // 🚀 START
-app.listen(5000, () => {
-  console.log("Server running on http://localhost:5000");
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
