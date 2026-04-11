@@ -104,13 +104,14 @@ function removeFromCart(index) {
 if (cartIcon) {
   cartIcon.addEventListener("click", (e) => {
     e.preventDefault();
-    cartTab.classList.toggle("active");
+    cartTab.classList.toggle("cart-tab-active");
   });
 }
 
 if (closeBtn) {
-  closeBtn.addEventListener("click", () => {
-    cartTab.classList.remove("active");
+  closeBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    cartTab.classList.remove("cart-tab-active");
   });
 }
 
