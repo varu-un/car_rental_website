@@ -3,12 +3,16 @@ const Razorpay = require("razorpay");
 const cors = require("cors");
 const crypto = require("crypto");
 const mongoose = require("mongoose");
+const path = require("path");
 require("dotenv").config();
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+// 🔥 Serve static files from Client folder
+app.use(express.static(path.join(__dirname, "../Client")));
 
 // 🔥 MongoDB - Connection
 let mongooseConnection = null;
@@ -58,8 +62,13 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET || "YOUR_KEY_SECRET",
 });
 
-// ✅ Health check
+// ✅ Serve index.html for root and unmatched routes
 app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "../Client/index.html"));
+});
+
+// ✅ Health check endpoint
+app.get("/api/health", (req, res) => {
   res.json({ status: "ok", message: "Server is running" });
 });
 
