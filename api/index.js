@@ -114,14 +114,21 @@ app.post("/verify-payment", async (req, res) => {
     if (expectedSignature === razorpay_signature) {
       // ✅ SAVE BOOKING TO MONGODB
       const BookingModel = await getBookingModel();
-      await BookingModel.create({
+      await Booking.create({
         name: userData.name,
         email: userData.email,
         phone: userData.phone,
         location: userData.location,
+        pickupDate: userData.pickupDate,
+        returnDate: userData.returnDate,
+        days: userData.days,
+        cars: userData.cars,
+        totalCars: userData.totalCars,
         amount: userData.amount,
+        bookingStatus: "confirmed",
         paymentId: razorpay_payment_id,
         orderId: razorpay_order_id,
+        bookingDate: new Date(),
       });
 
       res.json({ status: "success" });

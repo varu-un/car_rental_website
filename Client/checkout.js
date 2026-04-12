@@ -89,11 +89,18 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    const days = getDays();
+
     const userData = {
       name: document.getElementById("fullName").value.trim(),
       email: document.getElementById("email").value.trim(),
       phone: document.getElementById("phone").value.trim(),
       location: document.getElementById("location").value.trim(),
+      pickupDate: pickupDate.value,
+      returnDate: returnDate.value,
+      days,
+      cars: cart,
+      totalCars: cart.reduce((sum, item) => sum + (item.quantity || 1), 0),
       amount,
     };
 
@@ -122,6 +129,20 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
+      let currentUser = null;
+
+      try {
+        const meRes = await fetch(`${API_BASE}/auth/me`, {
+          credentials: "include",
+        });
+
+        if (meRes.ok) {
+          currentUser = await meRes.json();
+        }
+      } catch (error) {
+        console.error("User session check failed:", error);
+      }
+
       const options = {
         key: "rzp_test_ScFjfRPvIvaxaK",
         amount: order.amount,
@@ -142,6 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 body: JSON.stringify({
                   ...response,
                   userData,
+                  userId: currentUser?._id || null,
                 }),
               },
             );

@@ -13,6 +13,35 @@ document.addEventListener("DOMContentLoaded", () => {
   const mobileNavLinks = document.querySelectorAll(".mobile-link");
   const allSectionLinks = [...desktopNavLinks, ...mobileNavLinks];
   const sections = document.querySelectorAll("section[id]");
+  const API_BASE = "http://localhost:5000";
+  const signBtn = document.querySelector(".sign-btn");
+  const mobileSignBtn = document.querySelector(".mobile-sign-btn");
+
+  async function loadUserSession() {
+    try {
+      const res = await fetch(`${API_BASE}/auth/me`, {
+        credentials: "include",
+      });
+
+      if (!res.ok) return;
+
+      const user = await res.json();
+
+      if (signBtn) {
+        signBtn.innerHTML = `Hi, ${user.name.split(" ")[0]}`;
+        signBtn.href = "account.html";
+      }
+
+      if (mobileSignBtn) {
+        mobileSignBtn.innerHTML = `My Account`;
+        mobileSignBtn.href = "account.html";
+      }
+    } catch (error) {
+      console.error("Session check failed:", error);
+    }
+  }
+
+  loadUserSession();
 
   let productList = [];
   let cartProduct = JSON.parse(localStorage.getItem("cart")) || [];
@@ -257,19 +286,25 @@ document.addEventListener("DOMContentLoaded", () => {
     link.addEventListener("click", (e) => {
       const href = link.getAttribute("href");
 
-      if (!href || !href.startsWith("#")) return;
+      if (!href) return;
 
-      e.preventDefault();
+      if (href.startsWith("#")) {
+        e.preventDefault();
 
-      const targetSection = document.querySelector(href);
+        const targetSection = document.querySelector(href);
 
-      if (targetSection) {
-        targetSection.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
+        if (targetSection) {
+          targetSection.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
 
-        setActiveNav(href.replace("#", ""));
+          setActiveNav(href.replace("#", ""));
+        }
+
+        closeMobileMenu();
+        closeCart();
+        return;
       }
 
       closeMobileMenu();
@@ -343,4 +378,3 @@ document.addEventListener("DOMContentLoaded", () => {
   updateCartTotal();
   setActiveNav("home");
 });
-

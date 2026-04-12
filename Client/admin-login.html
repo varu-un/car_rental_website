@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Login | Car Rentals</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="dashboard.css" />
+  </head>
+  <body>
+    <main class="dashboard-page">
+      <div class="container">
+        <div class="admin-login-card">
+          <p class="eyebrow">Admin Access</p>
+          <h1 class="page-title">Admin Login</h1>
+          <p class="page-subtitle">
+            Login to access booking analytics and sales dashboard.
+          </p>
+
+          <form id="adminLoginForm" class="admin-login-form">
+            <input
+              type="text"
+              id="adminUsername"
+              placeholder="Username"
+              required
+            />
+            <input
+              type="password"
+              id="adminPassword"
+              placeholder="Password"
+              required
+            />
+            <button type="submit" class="btn-primary">Login</button>
+          </form>
+        </div>
+      </div>
+    </main>
+
+    <script src="admin-login.js"></script>
+  </body>
+</html>

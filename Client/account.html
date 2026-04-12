@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Account | Car Rentals</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="dashboard.css" />
+  </head>
+  <body>
+    <div class="page-glow glow-1"></div>
+    <div class="page-glow glow-2"></div>
+
+    <header class="site-header">
+      <nav class="navbar wrapper dashboard-nav">
+        <a href="index.html" class="logo">Car Rentals</a>
+        <div class="top-links">
+          <a href="index.html" class="home-btn">Home</a>
+          <a href="mybookings.html" class="home-btn">My Bookings</a>
+          <button id="logoutBtn" class="btn-primary small-btn">Logout</button>
+        </div>
+      </nav>
+    </header>
+
+    <main class="dashboard-page">
+      <div class="wrapper">
+        <div class="page-heading">
+          <p class="eyebrow">User Account</p>
+          <h1 class="page-title">My Account</h1>
+          <p class="page-subtitle">
+            Manage your profile, addresses, and payment options.
+          </p>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h3>Name</h3>
+            <p id="accountName">-</p>
+          </div>
+          <div class="stat-card">
+            <h3>Email</h3>
+            <p id="accountEmail">-</p>
+          </div>
+        </div>
+
+        <div class="chart-grid">
+          <div class="table-card">
+            <h2>Saved Addresses</h2>
+
+            <form id="addressForm" class="admin-login-form">
+              <input
+                type="text"
+                id="addressLabel"
+                placeholder="Label (Home / Office)"
+              />
+              <input
+                type="text"
+                id="addressFullName"
+                placeholder="Full name"
+                required
+              />
+              <input
+                type="text"
+                id="addressPhone"
+                placeholder="Phone"
+                required
+              />
+              <input
+                type="text"
+                id="addressLine1"
+                placeholder="Address line 1"
+                required
+              />
+              <input
+                type="text"
+                id="addressLine2"
+                placeholder="Address line 2"
+              />
+              <input type="text" id="addressCity" placeholder="City" required />
+              <input
+                type="text"
+                id="addressState"
+                placeholder="State"
+                required
+              />
+              <input
+                type="text"
+                id="addressPostalCode"
+                placeholder="Postal code"
+                required
+              />
+              <button type="submit" class="btn-primary">Save Address</button>
+            </form>
+
+            <div id="addressList"></div>
+          </div>
+
+          <div class="table-card">
+            <h2>Saved Payment Options</h2>
+
+            <form id="paymentForm" class="admin-login-form">
+              <input
+                type="text"
+                id="paymentType"
+                placeholder="Type (card / upi / wallet)"
+                required
+              />
+              <input
+                type="text"
+                id="paymentBrand"
+                placeholder="Brand (Visa / Mastercard)"
+              />
+              <input
+                type="text"
+                id="paymentLast4"
+                placeholder="Last 4 digits"
+              />
+              <input
+                type="text"
+                id="paymentUpiMasked"
+                placeholder="Masked UPI ID"
+              />
+              <button type="submit" class="btn-primary">
+                Save Payment Option
+              </button>
+            </form>
+
+            <div id="paymentList"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script src="account.js"></script>
+  </body>
+</html>

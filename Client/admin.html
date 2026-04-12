@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard | Car Rentals</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="dashboard.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <nav class="navbar wrapper">
+        <a href="index.html" class="logo">Car Rentals</a>
+
+        <div class="top-links">
+          <a href="index.html" class="home-btn">Home</a>
+          <a href="my-bookings.html" class="home-btn">My Bookings</a>
+          <button id="logoutBtn" class="btn-primary small-btn" type="button">
+            Logout
+          </button>
+        </div>
+      </nav>
+    </header>
+
+    <main class="dashboard-page">
+      <div class="wrapper">
+        <div class="page-heading">
+          <p class="eyebrow">Admin Panel</p>
+          <h1 class="page-title">Sales Analytics Dashboard</h1>
+          <p class="page-subtitle">
+            View revenue, bookings, top rented cars and export complete booking
+            data.
+          </p>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h3>Total Revenue</h3>
+            <p id="totalRevenue">₹0.00</p>
+          </div>
+          <div class="stat-card">
+            <h3>Total Bookings</h3>
+            <p id="totalBookings">0</p>
+          </div>
+          <div class="stat-card">
+            <h3>Total Cars Rented</h3>
+            <p id="totalCarsRented">0</p>
+          </div>
+          <div class="stat-card">
+            <h3>Average Booking Value</h3>
+            <p id="avgBookingValue">₹0.00</p>
+          </div>
+        </div>
+
+        <div class="chart-grid">
+          <div class="chart-card">
+            <h2>Monthly Revenue</h2>
+            <canvas id="monthlyRevenueChart"></canvas>
+          </div>
+
+          <div class="chart-card">
+            <h2>Top Rented Cars</h2>
+            <canvas id="topCarsChart"></canvas>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <div class="table-card-top">
+            <h2>Recent Bookings</h2>
+            <button id="exportCsvBtn" class="btn-primary" type="button">
+              Export CSV
+            </button>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Location</th>
+                  <th>Pickup</th>
+                  <th>Return</th>
+                  <th>Cars</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="bookingTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script src="admin.js"></script>
+  </body>
+</html>
