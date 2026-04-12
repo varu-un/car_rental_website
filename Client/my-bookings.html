@@ -8,33 +8,12 @@
     <link rel="stylesheet" href="dashboard.css" />
   </head>
   <body>
-    <div class="page-glow glow-1"></div>
-    <div class="page-glow glow-2"></div>
+    <div class="wrapper">
+      <h1>My Bookings</h1>
+      <div id="bookings"></div>
+    </div>
 
-    <header class="site-header">
-      <nav class="navbar wrapper dashboard-nav">
-        <a href="index.html" class="logo">Car Rentals</a>
-        <div class="top-links">
-          <a href="index.html" class="home-btn">Home</a>
-          <a href="account.html" class="home-btn">My Account</a>
-        </div>
-      </nav>
-    </header>
-
-    <main class="dashboard-page">
-      <div class="wrapper">
-        <div class="page-heading">
-          <p class="eyebrow">Customer Panel</p>
-          <h1 class="page-title">My Bookings</h1>
-          <p class="page-subtitle">
-            View your saved order history and bookings.
-          </p>
-        </div>
-
-        <div id="myBookingsList" class="bookings-grid"></div>
-      </div>
-    </main>
-
-    <script src="mybookings.js"></script>
+    <script src="config.js"></script>
+    <script src="my-bookings.js"></script>
   </body>
 </html>

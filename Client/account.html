@@ -3,7 +3,22 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Account | Car Rentals</title>
+    <title>My Profile | Car Rentals</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300;400;500;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="dashboard.css" />
   </head>
@@ -14,10 +29,12 @@
     <header class="site-header">
       <nav class="navbar wrapper dashboard-nav">
         <a href="index.html" class="logo">Car Rentals</a>
+
         <div class="top-links">
           <a href="index.html" class="home-btn">Home</a>
-          <a href="my-bookings.html" class="home-btn">My Bookings</a>
-          <button id="logoutBtn" class="btn-primary small-btn">Logout</button>
+          <button id="logoutBtn" class="btn-primary small-btn" type="button">
+            Logout
+          </button>
         </div>
       </nav>
     </header>
@@ -26,10 +43,12 @@
       <div class="wrapper">
         <div class="page-heading">
           <p class="eyebrow">User Account</p>
-          <h1 class="page-title">My Account</h1>
+          <h1 class="page-title">My Profile</h1>
           <p class="page-subtitle">
-            Manage your profile, addresses, and payment options.
+            Manage your profile, saved addresses, and payment options.
           </p>
+          <h2>My Bookings</h2>
+          <div id="accountBookings"></div>
         </div>
 
         <div class="stats-grid">
@@ -37,15 +56,26 @@
             <h3>Name</h3>
             <p id="accountName">-</p>
           </div>
+
           <div class="stat-card">
             <h3>Email</h3>
             <p id="accountEmail">-</p>
           </div>
+
+          <div class="stat-card">
+            <h3>Saved Addresses</h3>
+            <p id="addressCount">0</p>
+          </div>
+
+          <div class="stat-card">
+            <h3>Saved Payments</h3>
+            <p id="paymentCount">0</p>
+          </div>
         </div>
 
         <div class="chart-grid">
-          <div class="table-card">
-            <h2>Saved Addresses</h2>
+          <section class="table-card">
+            <h2>Add Address</h2>
 
             <form id="addressForm" class="admin-login-form">
               <input
@@ -93,10 +123,10 @@
             </form>
 
             <div id="addressList"></div>
-          </div>
+          </section>
 
-          <div class="table-card">
-            <h2>Saved Payment Options</h2>
+          <section class="table-card">
+            <h2>Add Payment Option</h2>
 
             <form id="paymentForm" class="admin-login-form">
               <input
@@ -126,11 +156,12 @@
             </form>
 
             <div id="paymentList"></div>
-          </div>
+          </section>
         </div>
       </div>
     </main>
 
+    <script src="config.js"></script>
     <script src="account.js"></script>
   </body>
 </html>

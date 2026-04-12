@@ -1,129 +1,104 @@
-document.addEventListener("DOMContentLoaded", async () => {
-  const API_BASE = "https://car-rental-website-ten-gamma.vercel.app/";
+async function loadBookings() {
+  try {
+    const { ok, data } = await apiCall("/user/bookings");
 
-  const logoutBtn = document.getElementById("logoutBtn");
-  const addressForm = document.getElementById("addressForm");
-  const paymentForm = document.getElementById("paymentForm");
-
-  async function loadAccount() {
-    try {
-      const [userRes, addressRes, paymentRes] = await Promise.all([
-        fetch(`${API_BASE}/auth/me`, { credentials: "include" }),
-        fetch(`${API_BASE}/user/addresses`, { credentials: "include" }),
-        fetch(`${API_BASE}/user/payment-options`, { credentials: "include" }),
-      ]);
-
-      if (!userRes.ok) {
-        window.location.href = "login.html";
-        return;
-      }
-
-      const user = await userRes.json();
-      const addresses = await addressRes.json();
-      const payments = await paymentRes.json();
-
-      document.getElementById("accountName").textContent = user.name || "-";
-      document.getElementById("accountEmail").textContent = user.email || "-";
-
-      const addressList = document.getElementById("addressList");
-      const paymentList = document.getElementById("paymentList");
-
-      addressList.innerHTML = addresses.length
-        ? addresses
-            .map(
-              (a) => `
-                <div class="booking-card">
-                  <p><strong>${a.label || "Address"}</strong></p>
-                  <p>${a.fullName || ""}</p>
-                  <p>${a.line1 || ""} ${a.line2 || ""}</p>
-                  <p>${a.city || ""}, ${a.state || ""} - ${a.postalCode || ""}</p>
-                  <p>${a.country || "India"}</p>
-                  <p>${a.phone || ""}</p>
-                </div>
-              `,
-            )
-            .join("")
-        : `<p class="empty-message">No saved addresses.</p>`;
-
-      paymentList.innerHTML = payments.length
-        ? payments
-            .map(
-              (p) => `
-                <div class="booking-card">
-                  <p><strong>${p.type || "Payment"}</strong></p>
-                  <p>${p.brand ? `${p.brand} ending in ${p.last4}` : p.upiIdMasked || "-"}</p>
-                </div>
-              `,
-            )
-            .join("")
-        : `<p class="empty-message">No saved payment options.</p>`;
-    } catch (error) {
-      console.error("Account load error:", error);
+    if (!ok) {
+      console.error("Failed to load bookings");
+      return;
     }
+
+    const div = document.getElementById("accountBookings");
+
+    if (!data || data.length === 0) {
+      div.innerHTML =
+        '<p style="padding: 20px; text-align: center; color: #6b6b6b;">No bookings found. <a href="index.html">Browse cars to make your first booking</a></p>';
+      return;
+    }
+
+    div.innerHTML = data
+      .map((b) => {
+        const statusBadgeColor =
+          b.bookingStatus === "confirmed"
+            ? "#10b981"
+            : b.bookingStatus === "completed"
+              ? "#3b82f6"
+              : "#ef4444";
+
+        const carsHTML = (b.cars || [])
+          .map(
+            (car) => `
+            <div class="booking-car-item">
+              ${car.image ? `<img src="${car.image}" alt="${car.name}" class="car-thumbnail">` : '<div class="car-thumbnail-placeholder">No Image</div>'}
+              <div class="car-details">
+                <h4>${car.name}</h4>
+                <p class="car-price">₹${(car.price || 0).toFixed(2)}/day</p>
+                <p class="car-quantity">Quantity: ${car.quantity || 1}</p>
+              </div>
+            </div>
+          `,
+          )
+          .join("");
+
+        return `
+          <div class="booking-card">
+            <div class="booking-header">
+              <div>
+                <h3>${b.name}</h3>
+                <p class="booking-email">${b.email}</p>
+              </div>
+              <span class="status-badge" style="background-color: ${statusBadgeColor}">
+                ${b.bookingStatus || "confirmed"}
+              </span>
+            </div>
+
+            <div class="booking-details-grid">
+              <div class="detail-group">
+                <label>Pickup Date</label>
+                <p>${b.pickupDate}</p>
+              </div>
+              <div class="detail-group">
+                <label>Return Date</label>
+                <p>${b.returnDate}</p>
+              </div>
+              <div class="detail-group">
+                <label>Rental Duration</label>
+                <p>${b.days || 0} day(s)</p>
+              </div>
+              <div class="detail-group">
+                <label>Location</label>
+                <p>${b.location}</p>
+              </div>
+              <div class="detail-group">
+                <label>Phone</label>
+                <p>${b.phone}</p>
+              </div>
+              <div class="detail-group">
+                <label>Payment ID</label>
+                <p class="payment-id">${b.paymentId || "N/A"}</p>
+              </div>
+            </div>
+
+            <div class="booking-cars-section">
+              <h4>Cars Rented (${b.totalCars || 0})</h4>
+              <div class="cars-list">
+                ${carsHTML}
+              </div>
+            </div>
+
+            <div class="booking-footer">
+              <div class="total-amount">
+                <span>Total Amount</span>
+                <strong>₹${(b.amount || 0).toFixed(2)}</strong>
+              </div>
+              <p class="booking-date">Booked on ${new Date(b.bookingDate || b.createdAt).toLocaleDateString()}</p>
+            </div>
+          </div>
+        `;
+      })
+      .join("");
+  } catch (error) {
+    console.error("Error loading bookings:", error);
   }
+}
 
-  logoutBtn.addEventListener("click", async () => {
-    await fetch(`${API_BASE}/auth/logout`, {
-      method: "POST",
-      credentials: "include",
-    });
-
-    window.location.href = "login.html";
-  });
-
-  addressForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const body = {
-      label: document.getElementById("addressLabel").value.trim(),
-      fullName: document.getElementById("addressFullName").value.trim(),
-      phone: document.getElementById("addressPhone").value.trim(),
-      line1: document.getElementById("addressLine1").value.trim(),
-      line2: document.getElementById("addressLine2").value.trim(),
-      city: document.getElementById("addressCity").value.trim(),
-      state: document.getElementById("addressState").value.trim(),
-      postalCode: document.getElementById("addressPostalCode").value.trim(),
-    };
-
-    const res = await fetch(`${API_BASE}/user/addresses`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify(body),
-    });
-
-    if (res.ok) {
-      addressForm.reset();
-      loadAccount();
-    } else {
-      alert("Failed to save address");
-    }
-  });
-
-  paymentForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const body = {
-      type: document.getElementById("paymentType").value.trim(),
-      brand: document.getElementById("paymentBrand").value.trim(),
-      last4: document.getElementById("paymentLast4").value.trim(),
-      upiIdMasked: document.getElementById("paymentUpiMasked").value.trim(),
-    };
-
-    const res = await fetch(`${API_BASE}/user/payment-options`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify(body),
-    });
-
-    if (res.ok) {
-      paymentForm.reset();
-      loadAccount();
-    } else {
-      alert("Failed to save payment option");
-    }
-  });
-
-  loadAccount();
-});
+loadBookings();

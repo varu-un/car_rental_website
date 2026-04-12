@@ -13,27 +13,26 @@ document.addEventListener("DOMContentLoaded", () => {
   const mobileNavLinks = document.querySelectorAll(".mobile-link");
   const allSectionLinks = [...desktopNavLinks, ...mobileNavLinks];
   const sections = document.querySelectorAll("section[id]");
-  const API_BASE = "https://car-rental-website-9tcu.onrender.com";
+
   const signBtn = document.querySelector(".sign-btn");
   const mobileSignBtn = document.querySelector(".mobile-sign-btn");
 
+  let productList = [];
+  let cartProduct = JSON.parse(localStorage.getItem("cart")) || [];
+
   async function loadUserSession() {
     try {
-      const res = await fetch(`${API_BASE}/auth/me`, {
-        credentials: "include",
-      });
+      const { ok, data } = await apiCall("/auth/me");
 
-      if (!res.ok) return;
-
-      const user = await res.json();
+      if (!ok) return;
 
       if (signBtn) {
-        signBtn.innerHTML = `Hi, ${user.name.split(" ")[0]}`;
+        signBtn.innerHTML = `My Account <i class="fa-solid fa-user"></i>`;
         signBtn.href = "account.html";
       }
 
       if (mobileSignBtn) {
-        mobileSignBtn.innerHTML = `My Account`;
+        mobileSignBtn.innerHTML = `My Account <i class="fa-solid fa-user"></i>`;
         mobileSignBtn.href = "account.html";
       }
     } catch (error) {
@@ -42,9 +41,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   loadUserSession();
-
-  let productList = [];
-  let cartProduct = JSON.parse(localStorage.getItem("cart")) || [];
 
   if (swiperEl) {
     new Swiper(".mySwiper", {
@@ -89,33 +85,19 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function openCart() {
-    if (cartTab) {
-      cartTab.classList.add("cart-tab-active");
-    }
+    cartTab?.classList.add("cart-tab-active");
   }
 
   function closeCart() {
-    if (cartTab) {
-      cartTab.classList.remove("cart-tab-active");
-    }
-  }
-
-  function openMobileMenu() {
-    if (mobileMenu) {
-      mobileMenu.classList.add("mobile-menu-active");
-    }
+    cartTab?.classList.remove("cart-tab-active");
   }
 
   function closeMobileMenu() {
-    if (mobileMenu) {
-      mobileMenu.classList.remove("mobile-menu-active");
-    }
+    mobileMenu?.classList.remove("mobile-menu-active");
   }
 
   function toggleMobileMenu() {
-    if (mobileMenu) {
-      mobileMenu.classList.toggle("mobile-menu-active");
-    }
+    mobileMenu?.classList.toggle("mobile-menu-active");
   }
 
   function setActiveNav(targetId) {
@@ -148,7 +130,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function decreaseQuantity(index) {
     if (!cartProduct[index]) return;
-
     cartProduct[index].quantity -= 1;
 
     if (cartProduct[index].quantity <= 0) {
@@ -161,7 +142,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function increaseQuantity(index) {
     if (!cartProduct[index]) return;
-
     cartProduct[index].quantity += 1;
     saveCart();
     renderCart();
@@ -169,7 +149,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function removeFromCart(index) {
     if (!cartProduct[index]) return;
-
     cartProduct.splice(index, 1);
     saveCart();
     renderCart();
@@ -184,7 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     cartList.innerHTML = "";
 
-    if (cartProduct.length === 0) {
+    if (!cartProduct.length) {
       cartList.innerHTML = `
         <p style="padding: 24px; text-align: center; color: #6b6b6b;">
           Your cart is empty
@@ -258,39 +237,29 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  if (cartIcon) {
-    cartIcon.addEventListener("click", (e) => {
-      e.preventDefault();
-      if (cartTab) {
-        cartTab.classList.toggle("cart-tab-active");
-      }
-      closeMobileMenu();
-    });
-  }
+  cartIcon?.addEventListener("click", (e) => {
+    e.preventDefault();
+    cartTab?.classList.toggle("cart-tab-active");
+    closeMobileMenu();
+  });
 
-  if (closeBtn) {
-    closeBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      closeCart();
-    });
-  }
+  closeBtn?.addEventListener("click", (e) => {
+    e.preventDefault();
+    closeCart();
+  });
 
-  if (hamburger) {
-    hamburger.addEventListener("click", () => {
-      toggleMobileMenu();
-      closeCart();
-    });
-  }
+  hamburger?.addEventListener("click", () => {
+    toggleMobileMenu();
+    closeCart();
+  });
 
   allSectionLinks.forEach((link) => {
     link.addEventListener("click", (e) => {
       const href = link.getAttribute("href");
-
       if (!href) return;
 
       if (href.startsWith("#")) {
         e.preventDefault();
-
         const targetSection = document.querySelector(href);
 
         if (targetSection) {
@@ -301,10 +270,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
           setActiveNav(href.replace("#", ""));
         }
-
-        closeMobileMenu();
-        closeCart();
-        return;
       }
 
       closeMobileMenu();
@@ -319,13 +284,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const clickedInsideMenu =
       mobileMenu?.contains(e.target) || hamburger?.contains(e.target);
 
-    if (!clickedInsideCart) {
-      closeCart();
-    }
-
-    if (!clickedInsideMenu) {
-      closeMobileMenu();
-    }
+    if (!clickedInsideCart) closeCart();
+    if (!clickedInsideMenu) closeMobileMenu();
   });
 
   window.addEventListener("scroll", () => {
@@ -377,4 +337,48 @@ document.addEventListener("DOMContentLoaded", () => {
   updateCartBadge();
   updateCartTotal();
   setActiveNav("home");
+
+  // Newsletter subscription
+  const newsletterInput = document.querySelector(
+    'input[placeholder="Enter your email address"]',
+  );
+  const newsletterBtn = Array.from(document.querySelectorAll("a.btn")).find(
+    (btn) => btn.textContent.trim() === "Subscribe",
+  );
+
+  if (newsletterInput && newsletterBtn) {
+    newsletterBtn.addEventListener("click", async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const email = newsletterInput.value.trim();
+
+      if (!email) {
+        alert("Please enter your email address");
+        return;
+      }
+
+      if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+        alert("Please enter a valid email");
+        return;
+      }
+
+      try {
+        const { ok, data } = await apiCall("/newsletter/subscribe", {
+          method: "POST",
+          body: JSON.stringify({ email }),
+        });
+
+        if (ok) {
+          alert("Thank you for subscribing!");
+          newsletterInput.value = "";
+        } else {
+          alert(data.message || "Failed to subscribe. Please try again.");
+        }
+      } catch (error) {
+        console.error("Newsletter subscription error:", error);
+        alert("Failed to subscribe. Please try again.");
+      }
+    });
+  }
 });

@@ -1,10 +1,21 @@
 document.addEventListener("DOMContentLoaded", async () => {
-  const API_BASE = "https://car-rental-website-ten-gamma.vercel.app/"; // replace this
+  // Check if admin is authenticated
+  const checkAuth = async () => {
+    try {
+      const { ok } = await apiCall("/analytics/summary");
+      if (!ok) {
+        window.location.href = "admin-login.html";
+        return false;
+      }
+      return true;
+    } catch (error) {
+      window.location.href = "admin-login.html";
+      return false;
+    }
+  };
 
-  if (localStorage.getItem("isAdminLoggedIn") !== "true") {
-    window.location.href = "admin-login.html";
-    return;
-  }
+  const isAuthenticated = await checkAuth();
+  if (!isAuthenticated) return;
 
   const logoutBtn = document.getElementById("logoutBtn");
   const exportCsvBtn = document.getElementById("exportCsvBtn");
@@ -16,8 +27,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     return `₹${Number(value || 0).toFixed(2)}`;
   }
 
-  logoutBtn.addEventListener("click", () => {
-    localStorage.removeItem("isAdminLoggedIn");
+  logoutBtn.addEventListener("click", async () => {
+    await apiCall("/admin-logout", { method: "POST" });
     window.location.href = "admin-login.html";
   });
 
@@ -85,23 +96,60 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   try {
-    const [summaryRes, monthlyRes, topCarsRes, bookingsRes] = await Promise.all(
-      [
-        fetch(`${API_BASE}/analytics/summary`),
-        fetch(`${API_BASE}/analytics/monthly-revenue`),
-        fetch(`${API_BASE}/analytics/top-cars`),
-        fetch(`${API_BASE}/bookings`),
-      ],
-    );
+    const [
+      summaryResult,
+      monthlyResult,
+      topCarsResult,
+      bookingsResult,
+      newslettersResult,
+    ] = await Promise.all([
+      apiCall("/analytics/summary"),
+      apiCall("/analytics/monthly-revenue"),
+      apiCall("/analytics/top-cars"),
+      apiCall("/admin/bookings"),
+      apiCall("/admin/newsletters"),
+    ]);
 
-    if (!summaryRes.ok || !monthlyRes.ok || !topCarsRes.ok || !bookingsRes.ok) {
+    if (
+      !summaryResult.ok ||
+      !monthlyResult.ok ||
+      !topCarsResult.ok ||
+      !bookingsResult.ok
+    ) {
+      console.error("Analytics endpoints failed:", {
+        summary: {
+          ok: summaryResult.ok,
+          status: summaryResult.status,
+          data: summaryResult.data,
+        },
+        monthly: {
+          ok: monthlyResult.ok,
+          status: monthlyResult.status,
+          data: monthlyResult.data,
+        },
+        topCars: {
+          ok: topCarsResult.ok,
+          status: topCarsResult.status,
+          data: topCarsResult.data,
+        },
+        bookings: {
+          ok: bookingsResult.ok,
+          status: bookingsResult.status,
+          data: bookingsResult.data,
+        },
+      });
       throw new Error("Failed to load dashboard data");
     }
 
-    const summary = await summaryRes.json();
-    const monthlyData = await monthlyRes.json();
-    const topCarsData = await topCarsRes.json();
-    const bookings = await bookingsRes.json();
+    const summary = summaryResult.data;
+    const monthlyData = monthlyResult.data;
+    const topCarsData = topCarsResult.data;
+    const bookingsData = bookingsResult.data;
+    const newslettersData = newslettersResult.ok
+      ? newslettersResult.data
+      : { newsletters: [] };
+
+    const bookings = bookingsData.bookings || bookingsData;
 
     allBookings = bookings;
 
@@ -137,6 +185,68 @@ document.addEventListener("DOMContentLoaded", async () => {
       `;
       bookingTableBody.appendChild(tr);
     });
+
+    // Render newsletters table
+    const newsletterTableBody = document.getElementById("newsletterTableBody");
+    if (newsletterTableBody) {
+      newsletterTableBody.innerHTML = "";
+      const newsletters = newslettersData.newsletters || [];
+
+      if (newsletters.length === 0) {
+        newsletterTableBody.innerHTML =
+          '<tr><td colspan="2" style="text-align: center; padding: 20px;">No subscribers yet</td></tr>';
+      } else {
+        newsletters.forEach((newsletter) => {
+          const tr = document.createElement("tr");
+          const date = new Date(newsletter.subscribedAt).toLocaleDateString();
+          tr.innerHTML = `
+            <td>${newsletter.email || ""}</td>
+            <td>${date}</td>
+          `;
+          newsletterTableBody.appendChild(tr);
+        });
+      }
+    }
+
+    // Newsletter export button
+    const exportNewslettersBtn = document.getElementById(
+      "exportNewslettersBtn",
+    );
+    if (exportNewslettersBtn) {
+      exportNewslettersBtn.addEventListener("click", () => {
+        const newsletters = newslettersData.newsletters || [];
+        if (!newsletters.length) {
+          alert("No newsletter subscribers to export.");
+          return;
+        }
+
+        const headers = ["Email", "Subscribed At"];
+        const rows = newsletters.map((newsletter) => [
+          newsletter.email || "",
+          new Date(newsletter.subscribedAt).toLocaleString(),
+        ]);
+
+        const csvContent = [headers, ...rows]
+          .map((row) =>
+            row
+              .map((cell) => `"${String(cell).replace(/"/g, '""')}"`)
+              .join(","),
+          )
+          .join("\n");
+
+        const blob = new Blob([csvContent], {
+          type: "text/csv;charset=utf-8;",
+        });
+
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "newsletter-subscribers.csv";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      });
+    }
 
     new Chart(document.getElementById("monthlyRevenueChart"), {
       type: "line",

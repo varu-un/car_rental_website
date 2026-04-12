@@ -10,11 +10,22 @@ const path = require("path");
 
 const Booking = require("./models/booking");
 const User = require("./models/user");
-const { authRequired } = require("./middleware/auth");
+const Newsletter = require("./models/Newsletter");
+const { authRequired, authAdmin } = require("./middleware/auth");
 
 require("dotenv").config();
 
 const app = express();
+
+// Test endpoint
+app.get("/test", (req, res) => {
+  res.json({
+    success: true,
+    message: "Server is running",
+    time: new Date().toISOString(),
+    hasDb: mongoose.connection.readyState === 1,
+  });
+});
 
 app.use(
   cors({
@@ -23,6 +34,7 @@ app.use(
       "https://car-rental-website-9tcu.vercel.app",
       "http://localhost:5500",
       "http://127.0.0.1:5500",
+      "http://localhost:3000",
     ],
     credentials: true,
   }),
@@ -42,18 +54,24 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
-function signToken(user) {
+function signToken(user, isAdmin = false) {
   return jwt.sign(
     {
       userId: user._id,
       email: user.email,
-      role: user.role,
+      role: isAdmin ? "admin" : user.role,
     },
     process.env.JWT_SECRET,
     { expiresIn: "7d" },
   );
 }
-
+// Cookie options - secure only in production
+const cookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+};
 /* -------------------- AUTH -------------------- */
 
 app.post("/auth/signup", async (req, res) => {
@@ -80,12 +98,7 @@ app.post("/auth/signup", async (req, res) => {
 
     const token = signToken(user);
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: false,
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    res.cookie("token", token, cookieOptions);
 
     res.json({
       success: true,
@@ -119,12 +132,7 @@ app.post("/auth/login", async (req, res) => {
 
     const token = signToken(user);
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: false,
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    res.cookie("token", token, cookieOptions);
 
     res.json({
       success: true,
@@ -144,6 +152,7 @@ app.post("/auth/login", async (req, res) => {
 
 app.post("/auth/logout", (req, res) => {
   res.clearCookie("token");
+  res.clearCookie("adminToken");
   res.json({ success: true });
 });
 
@@ -155,6 +164,59 @@ app.get("/auth/me", authRequired, async (req, res) => {
     console.error("Fetch user error:", error);
     res.status(500).json({ message: "Failed to fetch user" });
   }
+});
+
+/* -------------------- ADMIN AUTH -------------------- */
+
+app.post("/admin-login", async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    if (
+      username === process.env.ADMIN_USERNAME &&
+      password === process.env.ADMIN_PASSWORD
+    ) {
+      let admin = await User.findOne({ email: "admin@carental.com" });
+      if (!admin) {
+        admin = await User.create({
+          name: "Admin",
+          email: "admin@carental.com",
+          password: await bcrypt.hash(password, 10),
+          role: "admin",
+        });
+      }
+
+      const token = jwt.sign(
+        {
+          userId: admin._id,
+          email: admin.email,
+          role: "admin",
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: "7d" },
+      );
+
+      res.cookie("adminToken", token, cookieOptions);
+
+      return res.json({
+        success: true,
+        message: "Admin login successful",
+      });
+    }
+
+    return res.status(401).json({
+      success: false,
+      message: "Invalid credentials",
+    });
+  } catch (error) {
+    console.error("Admin login error:", error);
+    res.status(500).json({ message: "Admin login failed" });
+  }
+});
+
+app.post("/admin-logout", (req, res) => {
+  res.clearCookie("adminToken");
+  res.json({ success: true });
 });
 
 /* -------------------- USER DATA -------------------- */
@@ -231,14 +293,57 @@ app.post("/user/payment-options", authRequired, async (req, res) => {
 });
 
 app.get("/user/bookings", authRequired, async (req, res) => {
+  const bookings = await Booking.find({ userId: req.user.userId }).sort({
+    createdAt: -1,
+  });
+  res.json(bookings);
+});
+
+/* -------------------- NEWSLETTER -------------------- */
+
+app.post("/newsletter/subscribe", async (req, res) => {
   try {
-    const bookings = await Booking.find({ userId: req.user.userId }).sort({
-      createdAt: -1,
+    const { email } = req.body;
+
+    if (!email || !email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+      return res.status(400).json({ message: "Invalid email" });
+    }
+
+    const existingSubscription = await Newsletter.findOne({
+      email: email.toLowerCase(),
     });
-    res.json(bookings);
+
+    if (existingSubscription) {
+      return res.status(400).json({ message: "Email already subscribed" });
+    }
+
+    await Newsletter.create({
+      email: email.toLowerCase(),
+    });
+
+    res.json({
+      success: true,
+      message: "Successfully subscribed to newsletter",
+    });
   } catch (error) {
-    console.error("Fetch user bookings error:", error);
-    res.status(500).json({ message: "Failed to fetch bookings" });
+    console.error("Newsletter subscribe error:", error);
+    res.status(500).json({ message: "Failed to subscribe" });
+  }
+});
+
+app.get("/admin/newsletters", authAdmin, async (req, res) => {
+  try {
+    console.log("Loading newsletters...");
+    const newsletters = await Newsletter.find().sort({ subscribedAt: -1 });
+    console.log("Found newsletters:", newsletters.length);
+    res.json({
+      success: true,
+      count: newsletters.length,
+      newsletters: newsletters,
+    });
+  } catch (error) {
+    console.error("Fetch newsletters error:", error);
+    res.status(500).json({ message: "Failed to fetch newsletters" });
   }
 });
 
@@ -264,14 +369,13 @@ app.post("/create-order", async (req, res) => {
   }
 });
 
-app.post("/verify-payment", async (req, res) => {
+app.post("/verify-payment", authRequired, async (req, res) => {
   try {
     const {
       razorpay_order_id,
       razorpay_payment_id,
       razorpay_signature,
       userData,
-      userId,
     } = req.body;
 
     const body = `${razorpay_order_id}|${razorpay_payment_id}`;
@@ -286,7 +390,7 @@ app.post("/verify-payment", async (req, res) => {
     }
 
     await Booking.create({
-      userId: userId || null,
+      userId: req.user.userId, // 🔥 CRITICAL
       name: userData.name,
       email: userData.email,
       phone: userData.phone,
@@ -301,52 +405,38 @@ app.post("/verify-payment", async (req, res) => {
       paymentId: razorpay_payment_id,
       orderId: razorpay_order_id,
       bookingDate: new Date(),
-      paymentSummary: {
-        methodType: userData.paymentMethodType || "",
-        brand: userData.paymentBrand || "",
-        last4: userData.paymentLast4 || "",
-        gatewayPaymentId: razorpay_payment_id,
-      },
     });
 
     res.json({ status: "success" });
   } catch (err) {
-    console.error("Verify payment error:", err);
+    console.error(err);
     res.status(500).json({ status: "error" });
   }
 });
 
-/* -------------------- BOOKINGS + ADMIN -------------------- */
+/* -------------------- ADMIN BOOKINGS & ANALYTICS -------------------- */
 
-app.get("/bookings", async (req, res) => {
+app.get("/admin/bookings", authAdmin, async (req, res) => {
   try {
+    console.log("Loading admin bookings...");
     const data = await Booking.find().sort({ createdAt: -1 });
-    res.json(data);
+    console.log("Found admin bookings:", data.length);
+    res.json({
+      success: true,
+      count: data.length,
+      bookings: data,
+    });
   } catch (error) {
     console.error("Fetch bookings error:", error);
     res.status(500).json({ message: "Failed to fetch bookings" });
   }
 });
 
-app.post("/admin-login", (req, res) => {
-  const { username, password } = req.body;
-
-  if (
-    username === process.env.ADMIN_USERNAME &&
-    password === process.env.ADMIN_PASSWORD
-  ) {
-    return res.json({ success: true });
-  }
-
-  return res.status(401).json({
-    success: false,
-    message: "Invalid credentials",
-  });
-});
-
-app.get("/analytics/summary", async (req, res) => {
+app.get("/analytics/summary", authAdmin, async (req, res) => {
   try {
+    console.log("Loading summary analytics...");
     const bookings = await Booking.find();
+    console.log("Found bookings:", bookings.length);
 
     const totalRevenue = bookings.reduce(
       (sum, item) => sum + (item.amount || 0),
@@ -363,10 +453,11 @@ app.get("/analytics/summary", async (req, res) => {
     const avgBookingValue = totalBookings ? totalRevenue / totalBookings : 0;
 
     res.json({
-      totalRevenue,
+      success: true,
+      totalRevenue: Math.round(totalRevenue),
       totalBookings,
       totalCarsRented,
-      avgBookingValue,
+      avgBookingValue: Math.round(avgBookingValue),
     });
   } catch (error) {
     console.error("Summary analytics error:", error);
@@ -374,9 +465,11 @@ app.get("/analytics/summary", async (req, res) => {
   }
 });
 
-app.get("/analytics/monthly-revenue", async (req, res) => {
+app.get("/analytics/monthly-revenue", authAdmin, async (req, res) => {
   try {
+    console.log("Loading monthly revenue...");
     const bookings = await Booking.find();
+    console.log("Found bookings for monthly revenue:", bookings.length);
 
     const monthlyMap = {};
 
@@ -394,18 +487,20 @@ app.get("/analytics/monthly-revenue", async (req, res) => {
     });
 
     const labels = Object.keys(monthlyMap).sort();
-    const values = labels.map((label) => monthlyMap[label]);
+    const values = labels.map((label) => Math.round(monthlyMap[label]));
 
-    res.json({ labels, values });
+    res.json({ success: true, labels, values });
   } catch (error) {
     console.error("Monthly revenue error:", error);
     res.status(500).json({ message: "Failed to load monthly revenue" });
   }
 });
 
-app.get("/analytics/top-cars", async (req, res) => {
+app.get("/analytics/top-cars", authAdmin, async (req, res) => {
   try {
+    console.log("Loading top cars...");
     const bookings = await Booking.find();
+    console.log("Found bookings for top cars:", bookings.length);
 
     const carMap = {};
 
@@ -427,6 +522,7 @@ app.get("/analytics/top-cars", async (req, res) => {
       .slice(0, 10);
 
     res.json({
+      success: true,
       labels: sortedCars.map(([name]) => name),
       values: sortedCars.map(([, count]) => count),
     });

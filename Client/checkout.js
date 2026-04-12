@@ -1,6 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const API_BASE = "https://car-rental-website-ten-gamma.vercel.app/";
-
   const bookingForm = document.getElementById("bookingForm");
   const summaryList = document.getElementById("summaryList");
   const totalPriceEl = document.getElementById("totalPrice");
@@ -11,16 +9,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const cart = JSON.parse(localStorage.getItem("cart")) || [];
 
   const today = new Date().toISOString().split("T")[0];
-  pickupDate.min = today;
-  returnDate.min = today;
+  if (pickupDate) pickupDate.min = today;
+  if (returnDate) returnDate.min = today;
 
   function getDays() {
     if (!pickupDate.value || !returnDate.value) return 0;
 
     const start = new Date(pickupDate.value);
     const end = new Date(returnDate.value);
-
     const diff = (end - start) / (1000 * 60 * 60 * 24);
+
     return diff > 0 ? diff : 0;
   }
 
@@ -29,9 +27,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderCart() {
+    if (!summaryList || !totalPriceEl || !daysInfo) return;
+
     summaryList.innerHTML = "";
 
-    if (cart.length === 0) {
+    if (!cart.length) {
       summaryList.innerHTML = `<p class="empty-message">No cars selected</p>`;
       totalPriceEl.textContent = "₹0.00";
       daysInfo.textContent = "Your cart is empty";
@@ -76,16 +76,16 @@ document.addEventListener("DOMContentLoaded", () => {
     totalPriceEl.textContent = formatCurrency(total);
   }
 
-  pickupDate.addEventListener("change", () => {
+  pickupDate?.addEventListener("change", () => {
     returnDate.min = pickupDate.value;
     renderCart();
   });
 
-  returnDate.addEventListener("change", renderCart);
+  returnDate?.addEventListener("change", renderCart);
 
   renderCart();
 
-  bookingForm.addEventListener("submit", async (e) => {
+  bookingForm?.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const amount = parseFloat(totalPriceEl.textContent.replace(/[^\d.]/g, ""));
@@ -102,10 +102,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const userData = {
-      name: document.getElementById("fullName").value.trim(),
-      email: document.getElementById("email").value.trim(),
-      phone: document.getElementById("phone").value.trim(),
-      location: document.getElementById("location").value.trim(),
+      name: document.getElementById("fullName")?.value.trim(),
+      email: document.getElementById("email")?.value.trim().toLowerCase(),
+      phone: document.getElementById("phone")?.value.trim(),
+      location: document.getElementById("location")?.value.trim(),
       pickupDate: pickupDate.value,
       returnDate: returnDate.value,
       days,
@@ -130,35 +130,25 @@ document.addEventListener("DOMContentLoaded", () => {
     let currentUser = null;
 
     try {
-      const meRes = await fetch(`${API_BASE}/auth/me`, {
-        credentials: "include",
-      });
+      const { ok, data } = await apiCall("/auth/me");
 
-      if (meRes.ok) {
-        currentUser = await meRes.json();
+      if (ok) {
+        currentUser = data;
       }
     } catch (error) {
       console.error("Session check failed:", error);
     }
 
     try {
-      const orderRes = await fetch(`${API_BASE}/create-order`, {
+      const { ok, data: order } = await apiCall("/create-order", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
         body: JSON.stringify({ amount }),
       });
 
-      if (!orderRes.ok) {
-        const errorText = await orderRes.text();
-        console.error("Create order failed:", errorText);
-        alert("Unable to create payment order.");
+      if (!ok) {
+        alert(order?.message || "Unable to create payment order.");
         return;
       }
-
-      const order = await orderRes.json();
 
       if (!order?.id || !order?.amount) {
         console.error("Invalid order response:", order);
@@ -183,36 +173,27 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         modal: {
           ondismiss: function () {
-            console.log("Razorpay popup closed by user");
+            console.log("Razorpay popup closed");
           },
         },
         handler: async function (response) {
           try {
-            const verifyRes = await fetch(`${API_BASE}/verify-payment`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
+            const { ok: verifyOk, data: result } = await apiCall(
+              "/verify-payment",
+              {
+                method: "POST",
+                body: JSON.stringify({
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                  userData,
+                }),
               },
-              credentials: "include",
-              body: JSON.stringify({
-                ...response,
-                userData,
-                userId: currentUser?._id || currentUser?.id || null,
-              }),
-            });
+            );
 
-            const result = await verifyRes.json();
-            console.log("Verify response:", result);
-
-            if (result.status === "success") {
-              alert("Payment successful and booking saved.");
+            if (verifyOk && result.status === "success") {
               localStorage.removeItem("cart");
-
-              if (currentUser) {
-                window.location.href = "mybookings.html";
-              } else {
-                window.location.href = "success.html";
-              }
+              window.location.href = "account.html";
             } else {
               alert("Payment verification failed.");
             }

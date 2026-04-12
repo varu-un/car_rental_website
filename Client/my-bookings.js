@@ -1,52 +1,104 @@
 document.addEventListener("DOMContentLoaded", async () => {
-  const API_BASE = "https://car-rental-website-ten-gamma.vercel.app/";
-  const bookingsList = document.getElementById("myBookingsList");
-
-  bookingsList.innerHTML = `<p class="empty-message">Loading bookings...</p>`;
+  const container = document.getElementById("bookings");
 
   try {
-    const res = await fetch(`${API_BASE}/user/bookings`, {
-      credentials: "include",
-    });
+    const { ok, data } = await apiCall("/user/bookings");
 
-    if (!res.ok) {
+    if (!ok) {
       window.location.href = "login.html";
       return;
     }
 
-    const bookings = await res.json();
-
-    bookingsList.innerHTML = "";
-
-    if (!bookings.length) {
-      bookingsList.innerHTML = `<p class="empty-message">No bookings found.</p>`;
+    if (!data || !data.length) {
+      container.innerHTML =
+        "<p class='no-bookings'>No bookings found. <a href='index.html'>Browse cars to make your first booking</a></p>";
       return;
     }
 
-    bookings.forEach((booking) => {
-      const carNames = (booking.cars || [])
-        .map((car) => `${car.name} x${car.quantity || 1}`)
-        .join(", ");
+    container.innerHTML = data
+      .map((b) => {
+        const statusBadgeColor =
+          b.bookingStatus === "confirmed"
+            ? "#10b981"
+            : b.bookingStatus === "completed"
+              ? "#3b82f6"
+              : "#ef4444";
 
-      const div = document.createElement("div");
-      div.className = "booking-card";
+        const carsHTML = (b.cars || [])
+          .map(
+            (car) => `
+            <div class="booking-car-item">
+              ${car.image ? `<img src="${car.image}" alt="${car.name}" class="car-thumbnail">` : '<div class="car-thumbnail-placeholder">No Image</div>'}
+              <div class="car-details">
+                <h4>${car.name}</h4>
+                <p class="car-price">₹${(car.price || 0).toFixed(2)}/day</p>
+                <p class="car-quantity">Quantity: ${car.quantity || 1}</p>
+              </div>
+            </div>
+          `,
+          )
+          .join("");
 
-      div.innerHTML = `
-        <h3>${booking.name}</h3>
-        <p><strong>Location:</strong> ${booking.location}</p>
-        <p><strong>Pickup:</strong> ${booking.pickupDate}</p>
-        <p><strong>Return:</strong> ${booking.returnDate}</p>
-        <p><strong>Days:</strong> ${booking.days}</p>
-        <p><strong>Cars:</strong> ${carNames || "-"}</p>
-        <p><strong>Total Cars:</strong> ${booking.totalCars}</p>
-        <p><strong>Amount:</strong> ₹${booking.amount}</p>
-        <p><strong>Status:</strong> ${booking.bookingStatus}</p>
-      `;
+        return `
+          <div class="booking-card">
+            <div class="booking-header">
+              <div>
+                <h3>${b.name}</h3>
+                <p class="booking-email">${b.email}</p>
+              </div>
+              <span class="status-badge" style="background-color: ${statusBadgeColor}">
+                ${b.bookingStatus || "confirmed"}
+              </span>
+            </div>
 
-      bookingsList.appendChild(div);
-    });
+            <div class="booking-details-grid">
+              <div class="detail-group">
+                <label>Pickup Date</label>
+                <p>${b.pickupDate}</p>
+              </div>
+              <div class="detail-group">
+                <label>Return Date</label>
+                <p>${b.returnDate}</p>
+              </div>
+              <div class="detail-group">
+                <label>Rental Duration</label>
+                <p>${b.days || 0} day(s)</p>
+              </div>
+              <div class="detail-group">
+                <label>Location</label>
+                <p>${b.location}</p>
+              </div>
+              <div class="detail-group">
+                <label>Phone</label>
+                <p>${b.phone}</p>
+              </div>
+              <div class="detail-group">
+                <label>Payment ID</label>
+                <p class="payment-id">${b.paymentId || "N/A"}</p>
+              </div>
+            </div>
+
+            <div class="booking-cars-section">
+              <h4>Cars Rented (${b.totalCars || 0})</h4>
+              <div class="cars-list">
+                ${carsHTML}
+              </div>
+            </div>
+
+            <div class="booking-footer">
+              <div class="total-amount">
+                <span>Total Amount</span>
+                <strong>₹${(b.amount || 0).toFixed(2)}</strong>
+              </div>
+              <p class="booking-date">Booked on ${new Date(b.bookingDate || b.createdAt).toLocaleDateString()}</p>
+            </div>
+          </div>
+        `;
+      })
+      .join("");
   } catch (error) {
-    console.error("Bookings error:", error);
-    bookingsList.innerHTML = `<p class="empty-message">Failed to load bookings.</p>`;
+    console.error("Error loading bookings:", error);
+    container.innerHTML =
+      "<p class='error-message'>Error loading bookings. Please try again later.</p>";
   }
 });

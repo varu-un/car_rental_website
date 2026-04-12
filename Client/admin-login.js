@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const API_BASE = "https://car-rental-website-9tcu.onrender.com";
   const form = document.getElementById("adminLoginForm");
 
   form.addEventListener("submit", async (e) => {
@@ -14,25 +13,19 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
-      const res = await fetch(`${API_BASE}/admin-login`, {
+      const { ok, data } = await apiCall("/admin-login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
         body: JSON.stringify({ username, password }),
       });
 
-      const data = await res.json();
       console.log("Admin login response:", data);
 
-      if (!res.ok) {
+      if (!ok) {
         alert(data.message || "Login failed");
         return;
       }
 
       if (data.success) {
-        localStorage.setItem("isAdminLoggedIn", "true");
         window.location.href = "admin.html";
       } else {
         alert("Invalid admin credentials");
