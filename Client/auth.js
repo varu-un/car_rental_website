@@ -1,58 +1,79 @@
-const API_URL = "http://localhost:5000/api/auth";
+document.addEventListener("DOMContentLoaded", () => {
+  const API_BASE = "https://car-rental-website-ten-gamma.vercel.app/";
 
-// SIGNUP
-const signupForm = document.getElementById("signupForm");
+  const signupForm = document.getElementById("signupForm");
+  const loginForm = document.getElementById("loginForm");
 
-if (signupForm) {
-  signupForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
+  if (signupForm) {
+    signupForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-    const data = {
-      fullName: document.getElementById("fullName").value,
-      email: document.getElementById("email").value,
-      password: document.getElementById("password").value,
-      agreementAccepted: document.getElementById("agreement").checked,
-    };
+      const name = document.getElementById("fullName")?.value.trim();
+      const email = document.getElementById("email")?.value.trim();
+      const password = document.getElementById("password")?.value.trim();
 
-    const res = await fetch(`${API_URL}/signup`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+      if (!name || !email || !password) {
+        alert("Please fill all fields.");
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/auth/signup`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ name, email, password }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          alert(data.message || "Signup failed");
+          return;
+        }
+
+        alert("Signup successful");
+        window.location.href = "account.html";
+      } catch (error) {
+        console.error("Signup error:", error);
+        alert("Signup failed");
+      }
     });
+  }
 
-    const result = await res.json();
-    alert(result.message || "Signup successful");
+  if (loginForm) {
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-    if (res.ok) window.location.href = "login.html";
-  });
-}
+      const email = document.getElementById("loginEmail")?.value.trim();
+      const password = document.getElementById("loginPassword")?.value.trim();
 
-// LOGIN
-const loginForm = document.getElementById("loginForm");
+      if (!email || !password) {
+        alert("Please fill all fields.");
+        return;
+      }
 
-if (loginForm) {
-  loginForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
+      try {
+        const res = await fetch(`${API_BASE}/auth/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ email, password }),
+        });
 
-    const data = {
-      email: document.getElementById("loginEmail").value,
-      password: document.getElementById("loginPassword").value,
-    };
+        const data = await res.json();
 
-    const res = await fetch(`${API_URL}/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+        if (!res.ok) {
+          alert(data.message || "Login failed");
+          return;
+        }
+
+        alert("Login successful");
+        window.location.href = "account.html";
+      } catch (error) {
+        console.error("Login error:", error);
+        alert("Login failed");
+      }
     });
-
-    const result = await res.json();
-
-    if (res.ok) {
-      localStorage.setItem("token", result.token);
-      alert("Login successful");
-      window.location.href = "index.html";
-    } else {
-      alert(result.message);
-    }
-  });
-}
+  }
+});

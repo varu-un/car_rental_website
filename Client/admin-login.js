@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const API_BASE = "https://car-rental-website-ten-gamma.vercel.app/"; // replace this
+  const API_BASE = "http://localhost:5000";
   const form = document.getElementById("adminLoginForm");
 
   form.addEventListener("submit", async (e) => {
@@ -19,13 +19,15 @@ document.addEventListener("DOMContentLoaded", () => {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify({ username, password }),
       });
 
       const data = await res.json();
+      console.log("Admin login response:", data);
 
       if (!res.ok) {
-        alert(data.message || "Login failed.");
+        alert(data.message || "Login failed");
         return;
       }
 
@@ -33,11 +35,11 @@ document.addEventListener("DOMContentLoaded", () => {
         localStorage.setItem("isAdminLoggedIn", "true");
         window.location.href = "admin.html";
       } else {
-        alert("Invalid credentials.");
+        alert("Invalid admin credentials");
       }
     } catch (error) {
       console.error("Admin login error:", error);
-      alert("Unable to login.");
+      alert("Unable to login. Check backend server.");
     }
   });
 });
