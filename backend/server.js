@@ -19,9 +19,10 @@ const app = express();
 app.use(
   cors({
     origin: [
+      "https://car-rental-website-ten-gamma.vercel.app",
+      "https://car-rental-website-9tcu.vercel.app",
       "http://localhost:5500",
       "http://127.0.0.1:5500",
-      "https://car-rental-website-ten-gamma.vercel.app",
     ],
     credentials: true,
   }),
