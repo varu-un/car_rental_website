@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const API_BASE = "https://car-rental-website-ten-gamma.vercel.app/";
+  const API_BASE = "https://car-rental-website-9tcu.onrender.com";
 
   const signupForm = document.getElementById("signupForm");
   const loginForm = document.getElementById("loginForm");

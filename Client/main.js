@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const mobileNavLinks = document.querySelectorAll(".mobile-link");
   const allSectionLinks = [...desktopNavLinks, ...mobileNavLinks];
   const sections = document.querySelectorAll("section[id]");
-  const API_BASE = "http://localhost:5000";
+  const API_BASE = "https://car-rental-website-9tcu.onrender.com";
   const signBtn = document.querySelector(".sign-btn");
   const mobileSignBtn = document.querySelector(".mobile-sign-btn");
 
