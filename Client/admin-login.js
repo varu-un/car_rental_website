@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const API_BASE = "https://your-backend-domain.com"; // replace this
+  const API_BASE = "https://car-rental-website-ten-gamma.vercel.app/"; // replace this
   const form = document.getElementById("adminLoginForm");
 
   form.addEventListener("submit", async (e) => {

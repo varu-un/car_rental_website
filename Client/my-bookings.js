@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", async () => {
-  const API_BASE = "http://localhost:5000";
+  const API_BASE = "https://car-rental-website-ten-gamma.vercel.app/";
   const bookingsList = document.getElementById("myBookingsList");
 
   bookingsList.innerHTML = `<p class="empty-message">Loading bookings...</p>`;

@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", async () => {
-  const API_BASE = "https://your-backend-domain.com"; // replace this
+  const API_BASE = "https://car-rental-website-ten-gamma.vercel.app/"; // replace this
 
   if (localStorage.getItem("isAdminLoggedIn") !== "true") {
     window.location.href = "admin-login.html";
