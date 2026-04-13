@@ -18,15 +18,17 @@ document.addEventListener("DOMContentLoaded", () => {
         body: JSON.stringify({ username, password }),
       });
 
-      console.log("Admin login response:", data);
+      console.log("Admin login response:", { ok, data });
 
       if (!ok) {
-        alert(data.message || "Login failed");
+        alert(data?.message || "Login failed");
         return;
       }
 
-      if (data.success) {
-        window.location.href = "admin.html";
+      if (data?.success === true) {
+        setTimeout(() => {
+          window.location.href = "admin.html";
+        }, 500);
       } else {
         alert("Invalid admin credentials");
       }

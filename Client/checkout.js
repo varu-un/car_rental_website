@@ -177,6 +177,10 @@ document.addEventListener("DOMContentLoaded", () => {
           },
         },
         handler: async function (response) {
+          console.log(
+            "[checkout] Razorpay payment successful, verifying...",
+            response,
+          );
           try {
             const { ok: verifyOk, data: result } = await apiCall(
               "/verify-payment",
@@ -191,15 +195,24 @@ document.addEventListener("DOMContentLoaded", () => {
               },
             );
 
+            console.log("[checkout] Verification response:", {
+              ok: verifyOk,
+              result,
+            });
+
             if (verifyOk && result.status === "success") {
+              console.log(
+                "[checkout] Payment verified successfully, clearing cart and redirecting to account",
+              );
               localStorage.removeItem("cart");
-              window.location.href = "account.html";
+              window.location.href = window.location.origin + "/account.html";
             } else {
+              console.error("[checkout] Payment verification failed", result);
               alert("Payment verification failed.");
             }
           } catch (verifyError) {
-            console.error("Verification error:", verifyError);
-            alert("Payment verification failed.");
+            console.error("[checkout] Verification error:", verifyError);
+            alert("Payment verification failed: " + verifyError.message);
           }
         },
       };

@@ -28,7 +28,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         alert("Signup successful! Redirecting...");
-        window.location.href = "index.html";
+        // Use absolute URL to ensure same-domain navigation
+        setTimeout(() => {
+          window.location.href = window.location.origin + "/index.html";
+        }, 500);
       } catch (error) {
         console.error("Signup error:", error);
         alert("Signup failed: " + error.message);
@@ -61,7 +64,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         alert("Login successful! Redirecting...");
-        window.location.href = "index.html";
+        // Use absolute URL to ensure same-domain navigation
+        setTimeout(() => {
+          window.location.href = window.location.origin + "/index.html";
+        }, 500);
       } catch (error) {
         console.error("Login error:", error);
         alert("Login failed: " + error.message);

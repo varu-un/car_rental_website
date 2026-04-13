@@ -1,19 +1,25 @@
 async function loadBookings() {
   try {
+    console.log("[loadBookings] Starting to fetch bookings...");
     const { ok, data } = await apiCall("/user/bookings");
 
+    console.log("[loadBookings] API response - ok:", ok, "data:", data);
+
     if (!ok) {
-      console.error("Failed to load bookings");
+      console.error("[loadBookings] Failed to load bookings");
       return;
     }
 
     const div = document.getElementById("accountBookings");
 
     if (!data || data.length === 0) {
+      console.log("[loadBookings] No bookings found");
       div.innerHTML =
         '<p style="padding: 20px; text-align: center; color: #6b6b6b;">No bookings found. <a href="index.html">Browse cars to make your first booking</a></p>';
       return;
     }
+
+    console.log("[loadBookings] Found", data.length, "bookings");
 
     div.innerHTML = data
       .map((b) => {
@@ -101,4 +107,135 @@ async function loadBookings() {
   }
 }
 
-loadBookings();
+// Setup logout button and load user info
+document.addEventListener("DOMContentLoaded", async () => {
+  console.log("[account.js] Page loaded, initializing...");
+
+  // Load user session info
+  try {
+    const { ok, data: user } = await apiCall("/auth/me");
+    if (ok && user) {
+      console.log("[account.js] User session loaded:", user);
+      document.getElementById("accountName").textContent = user.name || "-";
+      document.getElementById("accountEmail").textContent = user.email || "-";
+      document.getElementById("addressCount").textContent = (
+        user.addresses || []
+      ).length;
+      document.getElementById("paymentCount").textContent = (
+        user.savedPayments || []
+      ).length;
+    }
+  } catch (error) {
+    console.error("[account.js] Error loading user session:", error);
+  }
+
+  // Setup logout button
+  const logoutBtn = document.getElementById("logoutBtn");
+
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", async () => {
+      try {
+        console.log("[logout] Logging out...");
+        const { ok } = await apiCall("/auth/logout", {
+          method: "POST",
+        });
+
+        if (ok) {
+          console.log("[logout] Logout successful, redirecting to home");
+          // Redirect to home page
+          window.location.href = window.location.origin + "/index.html";
+        } else {
+          console.error("[logout] Logout failed");
+          alert("Logout failed");
+        }
+      } catch (error) {
+        console.error("[logout] Logout error:", error);
+        alert("Logout error: " + error.message);
+      }
+    });
+  }
+
+  // Load bookings
+  console.log("[account.js] Loading bookings...");
+  await loadBookings();
+
+  // Setup Address Form
+  const addressForm = document.getElementById("addressForm");
+  if (addressForm) {
+    addressForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      try {
+        console.log("[account.js] Saving address...");
+        const { ok } = await apiCall("/user/addresses", {
+          method: "POST",
+          body: JSON.stringify({
+            label: document.getElementById("addressLabel").value,
+            fullName: document.getElementById("addressFullName").value,
+            phone: document.getElementById("addressPhone").value,
+            line1: document.getElementById("addressLine1").value,
+            line2: document.getElementById("addressLine2").value,
+            city: document.getElementById("addressCity").value,
+            state: document.getElementById("addressState").value,
+            postalCode: document.getElementById("addressPostalCode").value,
+          }),
+        });
+
+        if (ok) {
+          console.log("[account.js] Address saved successfully");
+          alert("Address saved successfully!");
+          addressForm.reset();
+          // Reload user info to update count
+          const { ok: ok2, data: user } = await apiCall("/auth/me");
+          if (ok2 && user) {
+            document.getElementById("addressCount").textContent = (
+              user.addresses || []
+            ).length;
+          }
+        } else {
+          alert("Failed to save address");
+        }
+      } catch (error) {
+        console.error("[account.js] Address save error:", error);
+        alert("Error: " + error.message);
+      }
+    });
+  }
+
+  // Setup Payment Form
+  const paymentForm = document.getElementById("paymentForm");
+  if (paymentForm) {
+    paymentForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      try {
+        console.log("[account.js] Saving payment option...");
+        const { ok } = await apiCall("/user/payment-options", {
+          method: "POST",
+          body: JSON.stringify({
+            type: document.getElementById("paymentType").value,
+            brand: document.getElementById("paymentBrand").value,
+            last4: document.getElementById("paymentLast4").value,
+            upiIdMasked: document.getElementById("paymentUpiMasked").value,
+          }),
+        });
+
+        if (ok) {
+          console.log("[account.js] Payment option saved successfully");
+          alert("Payment option saved successfully!");
+          paymentForm.reset();
+          // Reload user info to update count
+          const { ok: ok2, data: user } = await apiCall("/auth/me");
+          if (ok2 && user) {
+            document.getElementById("paymentCount").textContent = (
+              user.savedPayments || []
+            ).length;
+          }
+        } else {
+          alert("Failed to save payment option");
+        }
+      } catch (error) {
+        console.error("[account.js] Payment save error:", error);
+        alert("Error: " + error.message);
+      }
+    });
+  }
+});

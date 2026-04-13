@@ -26,10 +26,25 @@ app.get("/test", (req, res) => {
     hasDb: mongoose.connection.readyState === 1,
   });
 });
+// Admin auth check endpoint
+app.get("/admin/check-auth", authAdmin, (req, res) => {
+  res.json({ success: true, authenticated: true });
+});
 
+// Debug endpoint to check cookies and auth
+app.get("/debug/auth", (req, res) => {
+  res.json({
+    hasTokenCookie: !!req.cookies.token,
+    hasAdminTokenCookie: !!req.cookies.adminToken,
+    allCookies: req.cookies,
+    timestamp: new Date().toISOString(),
+  });
+});
 app.use(
   cors({
     origin: [
+      "http://localhost:5000",
+      "http://127.0.0.1:5000",
       "https://car-rental-website-ten-gamma.vercel.app",
       "https://car-rental-website-9tcu.vercel.app",
       "http://localhost:5500",
@@ -68,9 +83,10 @@ function signToken(user, isAdmin = false) {
 // Cookie options - secure only in production
 const cookieOptions = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-  maxAge: 7 * 24 * 60 * 60 * 1000,
+  secure: false, // Never use secure on localhost
+  sameSite: "strict", // strict is better for same-site cookies
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  path: "/",
 };
 /* -------------------- AUTH -------------------- */
 
@@ -119,18 +135,25 @@ app.post("/auth/signup", async (req, res) => {
 app.post("/auth/login", async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log("[/auth/login] Login attempt for email:", email);
 
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
+      console.log("[/auth/login] User not found:", email);
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
+      console.log("[/auth/login] Password mismatch for user:", email);
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
     const token = signToken(user);
+    console.log(
+      "[/auth/login] Login successful, setting token for user:",
+      user.email,
+    );
 
     res.cookie("token", token, cookieOptions);
 
@@ -145,23 +168,26 @@ app.post("/auth/login", async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Login error:", error);
+    console.error("[/auth/login] Login error:", error);
     res.status(500).json({ message: "Login failed" });
   }
 });
 
 app.post("/auth/logout", (req, res) => {
-  res.clearCookie("token");
-  res.clearCookie("adminToken");
-  res.json({ success: true });
+  console.log("[/auth/logout] Logging out user");
+  res.clearCookie("token", { path: "/" });
+  res.clearCookie("adminToken", { path: "/" });
+  res.json({ success: true, message: "Logout successful" });
 });
 
 app.get("/auth/me", authRequired, async (req, res) => {
   try {
+    console.log("[/auth/me] User ID from token:", req.user.userId);
     const user = await User.findById(req.user.userId).select("-password");
+    console.log("[/auth/me] User found:", user?.email);
     res.json(user);
   } catch (error) {
-    console.error("Fetch user error:", error);
+    console.error("[/auth/me] Fetch user error:", error);
     res.status(500).json({ message: "Failed to fetch user" });
   }
 });
@@ -171,13 +197,16 @@ app.get("/auth/me", authRequired, async (req, res) => {
 app.post("/admin-login", async (req, res) => {
   try {
     const { username, password } = req.body;
+    console.log("[/admin-login] Admin login attempt for username:", username);
 
     if (
       username === process.env.ADMIN_USERNAME &&
       password === process.env.ADMIN_PASSWORD
     ) {
+      console.log("[/admin-login] Admin credentials valid");
       let admin = await User.findOne({ email: "admin@carental.com" });
       if (!admin) {
+        console.log("[/admin-login] Creating new admin user");
         admin = await User.create({
           name: "Admin",
           email: "admin@carental.com",
@@ -196,6 +225,7 @@ app.post("/admin-login", async (req, res) => {
         { expiresIn: "7d" },
       );
 
+      console.log("[/admin-login] Setting adminToken for user:", admin.email);
       res.cookie("adminToken", token, cookieOptions);
 
       return res.json({
@@ -204,12 +234,13 @@ app.post("/admin-login", async (req, res) => {
       });
     }
 
+    console.log("[/admin-login] Invalid admin credentials provided");
     return res.status(401).json({
       success: false,
       message: "Invalid credentials",
     });
   } catch (error) {
-    console.error("Admin login error:", error);
+    console.error("[/admin-login] Admin login error:", error);
     res.status(500).json({ message: "Admin login failed" });
   }
 });
@@ -293,10 +324,46 @@ app.post("/user/payment-options", authRequired, async (req, res) => {
 });
 
 app.get("/user/bookings", authRequired, async (req, res) => {
-  const bookings = await Booking.find({ userId: req.user.userId }).sort({
-    createdAt: -1,
-  });
-  res.json(bookings);
+  try {
+    const userId = req.user.userId;
+    console.log("[/user/bookings] Fetching bookings for user:", userId);
+
+    const bookings = await Booking.find({ userId: userId }).sort({
+      createdAt: -1,
+    });
+
+    console.log("[/user/bookings] Found bookings count:", bookings.length);
+    console.log("[/user/bookings] Bookings data:", bookings);
+
+    res.json(bookings);
+  } catch (error) {
+    console.error("[/user/bookings] Error:", error);
+    res.status(500).json({ message: "Failed to fetch bookings" });
+  }
+});
+
+// Debug endpoint to check all bookings in database
+app.get("/debug/all-bookings", async (req, res) => {
+  try {
+    const allBookings = await Booking.find().lean();
+    const users = await User.find().select("_id email name").lean();
+
+    console.log(
+      "[/debug/all-bookings] Total bookings in DB:",
+      allBookings.length,
+    );
+    console.log("[/debug/all-bookings] Bookings:", allBookings);
+    console.log("[/debug/all-bookings] Users:", users);
+
+    res.json({
+      totalBookings: allBookings.length,
+      bookings: allBookings,
+      users: users,
+    });
+  } catch (error) {
+    console.error("[/debug/all-bookings] Error:", error);
+    res.status(500).json({ message: "Error fetching debug info" });
+  }
 });
 
 /* -------------------- NEWSLETTER -------------------- */
@@ -305,29 +372,39 @@ app.post("/newsletter/subscribe", async (req, res) => {
   try {
     const { email } = req.body;
 
-    if (!email || !email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-      return res.status(400).json({ message: "Invalid email" });
+    if (!email || !email.includes("@")) {
+      return res.status(400).json({
+        success: false,
+        message: "Valid email is required",
+      });
     }
 
-    const existingSubscription = await Newsletter.findOne({
-      email: email.toLowerCase(),
-    });
+    const [existing] = await db.query(
+      "SELECT id FROM newsletter_subscribers WHERE email = ?",
+      [email],
+    );
 
-    if (existingSubscription) {
-      return res.status(400).json({ message: "Email already subscribed" });
+    if (existing.length > 0) {
+      return res.json({
+        success: true,
+        message: "You are already subscribed",
+      });
     }
 
-    await Newsletter.create({
-      email: email.toLowerCase(),
-    });
+    await db.query("INSERT INTO newsletter_subscribers (email) VALUES (?)", [
+      email,
+    ]);
 
     res.json({
       success: true,
-      message: "Successfully subscribed to newsletter",
+      message: "Subscribed successfully",
     });
   } catch (error) {
-    console.error("Newsletter subscribe error:", error);
-    res.status(500).json({ message: "Failed to subscribe" });
+    console.error("Newsletter subscription error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to subscribe",
+    });
   }
 });
 
@@ -371,12 +448,35 @@ app.post("/create-order", async (req, res) => {
 
 app.post("/verify-payment", authRequired, async (req, res) => {
   try {
+    const userId = req.user?.userId;
+    console.log(
+      "[/verify-payment] ============ PAYMENT VERIFICATION START ============",
+    );
+    console.log("[/verify-payment] User info:", {
+      userId,
+      email: req.user?.email,
+    });
+    console.log("[/verify-payment] Request body keys:", Object.keys(req.body));
+
     const {
       razorpay_order_id,
       razorpay_payment_id,
       razorpay_signature,
       userData,
     } = req.body;
+
+    if (!razorpay_order_id || !razorpay_payment_id) {
+      console.error("[/verify-payment] Missing payment IDs in request");
+      return res
+        .status(400)
+        .json({ status: "failure", message: "Missing payment data" });
+    }
+
+    console.log("[/verify-payment] Received payment data:", {
+      order_id: razorpay_order_id,
+      payment_id: razorpay_payment_id,
+      userData: userData,
+    });
 
     const body = `${razorpay_order_id}|${razorpay_payment_id}`;
 
@@ -385,12 +485,29 @@ app.post("/verify-payment", authRequired, async (req, res) => {
       .update(body)
       .digest("hex");
 
-    if (expectedSignature !== razorpay_signature) {
+    const signatureMatch = expectedSignature === razorpay_signature;
+    console.log("[/verify-payment] Signature verification:", {
+      match: signatureMatch,
+    });
+
+    if (!signatureMatch) {
+      console.error(
+        "[/verify-payment] ❌ Signature mismatch! Payment rejected.",
+      );
       return res.status(400).json({ status: "failure" });
     }
 
-    await Booking.create({
-      userId: req.user.userId, // 🔥 CRITICAL
+    console.log("[/verify-payment] ✅ Signature verified. Creating booking...");
+    console.log("[/verify-payment] Booking details:", {
+      userId,
+      name: userData?.name,
+      email: userData?.email,
+      amount: userData?.amount,
+      cars: userData?.cars?.length,
+    });
+
+    const booking = await Booking.create({
+      userId: userId,
       name: userData.name,
       email: userData.email,
       phone: userData.phone,
@@ -407,10 +524,20 @@ app.post("/verify-payment", authRequired, async (req, res) => {
       bookingDate: new Date(),
     });
 
+    console.log(
+      "[/verify-payment] ✅ BOOKING CREATED:",
+      booking._id,
+      "for user:",
+      userId,
+    );
+    console.log(
+      "[/verify-payment] ============ PAYMENT VERIFICATION END ============",
+    );
     res.json({ status: "success" });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ status: "error" });
+    console.error("[/verify-payment] ❌ ERROR:", err.message);
+    console.error("[/verify-payment] Full error:", err);
+    res.status(500).json({ status: "error", message: err.message });
   }
 });
 

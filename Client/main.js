@@ -22,25 +22,48 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function loadUserSession() {
     try {
-      const { ok, data } = await apiCall("/auth/me");
+      console.log("[loadUserSession] Starting user session load...");
+      const { ok, status, data } = await apiCall("/auth/me");
 
-      if (!ok) return;
+      console.log("[loadUserSession] /auth/me response:", { ok, status, data });
 
-      if (signBtn) {
-        signBtn.innerHTML = `My Account <i class="fa-solid fa-user"></i>`;
-        signBtn.href = "account.html";
+      if (!ok) {
+        console.log(
+          "[loadUserSession] User not authenticated, status:",
+          status,
+        );
+        return;
       }
 
-      if (mobileSignBtn) {
-        mobileSignBtn.innerHTML = `My Account <i class="fa-solid fa-user"></i>`;
-        mobileSignBtn.href = "account.html";
+      console.log("[loadUserSession] User authenticated:", data?.email);
+
+      // Query DOM elements directly to ensure they exist
+      const signBtnElement = document.querySelector(".sign-btn");
+      const mobileSignBtnElement = document.querySelector(".mobile-sign-btn");
+
+      console.log("[loadUserSession] Found elements:", {
+        signBtn: !!signBtnElement,
+        mobileSignBtn: !!mobileSignBtnElement,
+      });
+
+      if (signBtnElement) {
+        signBtnElement.innerHTML = `My Account <i class="fa-solid fa-user"></i>`;
+        signBtnElement.href = "account.html";
+        console.log("[loadUserSession] Updated sign button");
+      }
+
+      if (mobileSignBtnElement) {
+        mobileSignBtnElement.innerHTML = `My Account <i class="fa-solid fa-user"></i>`;
+        mobileSignBtnElement.href = "account.html";
+        console.log("[loadUserSession] Updated mobile sign button");
       }
     } catch (error) {
-      console.error("Session check failed:", error);
+      console.error("[loadUserSession] Session check error:", error);
     }
   }
 
-  loadUserSession();
+  // Call with a delay to ensure DOM is fully ready
+  setTimeout(loadUserSession, 100);
 
   if (swiperEl) {
     new Swiper(".mySwiper", {

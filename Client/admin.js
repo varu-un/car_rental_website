@@ -2,13 +2,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Check if admin is authenticated
   const checkAuth = async () => {
     try {
-      const { ok } = await apiCall("/analytics/summary");
+      const { ok } = await apiCall("/admin/check-auth");
       if (!ok) {
         window.location.href = "admin-login.html";
         return false;
       }
       return true;
     } catch (error) {
+      console.error("Auth check error:", error);
       window.location.href = "admin-login.html";
       return false;
     }

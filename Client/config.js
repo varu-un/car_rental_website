@@ -1,10 +1,18 @@
 // API Configuration
 const API_CONFIG = {
-  BASE_URL:
-    window.location.hostname === "localhost" ||
-    window.location.hostname === "127.0.0.1"
-      ? "http://localhost:5000"
-      : "https://car-rental-website-9tcu.onrender.com",
+  // Auto-detect if running locally or on production
+  BASE_URL: (() => {
+    const hostname = window.location.hostname;
+    const port = window.location.port;
+
+    // If on localhost with any port, use localhost:5000 for API
+    if (hostname === "localhost" || hostname === "127.0.0.1") {
+      return "http://localhost:5000";
+    }
+
+    // Production URL
+    return "https://car-rental-website-9tcu.onrender.com";
+  })(),
 };
 
 // Helper function to make API calls
