@@ -9,7 +9,7 @@ const cookieParser = require("cookie-parser");
 const path = require("path");
 require("dotenv").config();
 
-const Booking = require("./models/booking");
+const Booking = require("./models/Booking");
 const User = require("./models/user");
 const Newsletter = require("./models/Newsletter");
 const { authRequired, authAdmin } = require("./middleware/auth");
@@ -887,6 +887,12 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`✅ Server running on port ${PORT}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+module.exports = app;
+
+

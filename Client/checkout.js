@@ -197,6 +197,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     if (!ok || !data?.success) {
+      if (data?.message === "Unauthorized") {
+        window.location.href = "./login.html";
+      }
       throw new Error(data?.message || "Payment verification failed.");
     }
 

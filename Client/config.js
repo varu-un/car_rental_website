@@ -6,7 +6,7 @@ const API_CONFIG = {
       return "http://localhost:5000";
     }
 
-    return "https://car-rental-website-9tcu.onrender.com";
+    return window.location.origin;
   })(),
 };
 

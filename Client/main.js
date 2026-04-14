@@ -24,10 +24,11 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       console.log("[loadUserSession] Starting user session load...");
       const { ok, status, data } = await apiCall("/auth/me");
+      const user = data?.user || null;
 
-      console.log("[loadUserSession] /auth/me response:", { ok, status, data });
+      console.log("[loadUserSession] /auth/me response:", { ok, status, user });
 
-      if (!ok) {
+      if (!ok || !user) {
         console.log(
           "[loadUserSession] User not authenticated, status:",
           status,
@@ -35,7 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      console.log("[loadUserSession] User authenticated:", data?.email);
+      console.log("[loadUserSession] User authenticated:", user.email);
 
       // Query DOM elements directly to ensure they exist
       const signBtnElement = document.querySelector(".sign-btn");

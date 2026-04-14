@@ -3,19 +3,20 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   try {
     const { ok, data } = await apiCall("/user/bookings");
+    const bookings = data?.bookings || [];
 
     if (!ok) {
       window.location.href = "login.html";
       return;
     }
 
-    if (!data || !data.length) {
+    if (!bookings.length) {
       container.innerHTML =
         "<p class='no-bookings'>No bookings found. <a href='index.html'>Browse cars to make your first booking</a></p>";
       return;
     }
 
-    container.innerHTML = data
+    container.innerHTML = bookings
       .map((b) => {
         const statusBadgeColor =
           b.bookingStatus === "confirmed"

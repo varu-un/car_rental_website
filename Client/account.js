@@ -2,6 +2,7 @@ async function loadBookings() {
   try {
     console.log("[loadBookings] Starting to fetch bookings...");
     const { ok, data } = await apiCall("/user/bookings");
+    const bookings = data?.bookings || [];
 
     console.log("[loadBookings] API response - ok:", ok, "data:", data);
 
@@ -12,16 +13,16 @@ async function loadBookings() {
 
     const div = document.getElementById("accountBookings");
 
-    if (!data || data.length === 0) {
+    if (bookings.length === 0) {
       console.log("[loadBookings] No bookings found");
       div.innerHTML =
         '<p style="padding: 20px; text-align: center; color: #6b6b6b;">No bookings found. <a href="index.html">Browse cars to make your first booking</a></p>';
       return;
     }
 
-    console.log("[loadBookings] Found", data.length, "bookings");
+    console.log("[loadBookings] Found", bookings.length, "bookings");
 
-    div.innerHTML = data
+    div.innerHTML = bookings
       .map((b) => {
         const statusBadgeColor =
           b.bookingStatus === "confirmed"
@@ -113,7 +114,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Load user session info
   try {
-    const { ok, data: user } = await apiCall("/auth/me");
+    const { ok, data } = await apiCall("/auth/me");
+    const user = data?.user || null;
     if (ok && user) {
       console.log("[account.js] User session loaded:", user);
       document.getElementById("accountName").textContent = user.name || "-";
@@ -185,7 +187,8 @@ document.addEventListener("DOMContentLoaded", async () => {
           alert("Address saved successfully!");
           addressForm.reset();
           // Reload user info to update count
-          const { ok: ok2, data: user } = await apiCall("/auth/me");
+          const { ok: ok2, data } = await apiCall("/auth/me");
+          const user = data?.user || null;
           if (ok2 && user) {
             document.getElementById("addressCount").textContent = (
               user.addresses || []
@@ -223,7 +226,8 @@ document.addEventListener("DOMContentLoaded", async () => {
           alert("Payment option saved successfully!");
           paymentForm.reset();
           // Reload user info to update count
-          const { ok: ok2, data: user } = await apiCall("/auth/me");
+          const { ok: ok2, data } = await apiCall("/auth/me");
+          const user = data?.user || null;
           if (ok2 && user) {
             document.getElementById("paymentCount").textContent = (
               user.savedPayments || []
