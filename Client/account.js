@@ -83,6 +83,10 @@ async function loadBookings() {
                 <label>Payment ID</label>
                 <p class="payment-id">${b.paymentId || "N/A"}</p>
               </div>
+              <div class="detail-group">
+                <label>UPI ID</label>
+                <p>${b.paymentSummary?.upiIdMasked || "N/A"}</p>
+              </div>
             </div>
 
             <div class="booking-cars-section">

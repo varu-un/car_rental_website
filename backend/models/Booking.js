@@ -44,6 +44,7 @@ const bookingSchema = new mongoose.Schema(
       methodType: String, // card / upi / netbanking
       brand: String, // visa / mastercard
       last4: String, // last 4 digits
+      upiIdMasked: String,
       gatewayPaymentId: String,
     },
 

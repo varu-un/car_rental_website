@@ -109,6 +109,33 @@ function parseAmount(amount) {
   return Number.isFinite(value) && value > 0 ? value : 0;
 }
 
+function maskUpiId(upiId) {
+  const value = String(upiId || "").trim();
+  const parts = value.split("@");
+
+  if (parts.length !== 2 || !parts[0] || !parts[1]) {
+    return "";
+  }
+
+  const handle = parts[0];
+  const maskedHandle =
+    handle.length <= 2
+      ? `${handle[0] || "*"}*`
+      : `${handle.slice(0, 2)}${"*".repeat(Math.max(handle.length - 2, 2))}`;
+
+  return `${maskedHandle}@${parts[1]}`;
+}
+
+function hasValidRazorpayConfig() {
+  return (
+    !!process.env.RAZORPAY_KEY_ID &&
+    !!process.env.RAZORPAY_KEY_SECRET &&
+    process.env.RAZORPAY_KEY_ID !== "your_razorpay_key_id" &&
+    process.env.RAZORPAY_KEY_SECRET !== "your-razorpay-secret-key-here" &&
+    process.env.RAZORPAY_KEY_SECRET !== "your_razorpay_key_secret"
+  );
+}
+
 /* -------------------- HEALTH / DEBUG -------------------- */
 
 app.get("/test", (req, res) => {
@@ -601,6 +628,13 @@ app.get("/admin/newsletters", authAdmin, async (req, res) => {
 
 app.post("/create-order", async (req, res) => {
   try {
+    if (!hasValidRazorpayConfig()) {
+      return res.status(500).json({
+        success: false,
+        message: "Razorpay keys are not configured on the server",
+      });
+    }
+
     const amount = parseAmount(req.body?.amount);
 
     console.log(
@@ -699,6 +733,11 @@ app.post("/verify-payment", authRequired, async (req, res) => {
       totalCars: Number(userData.totalCars || 0),
       amount: parseAmount(userData.amount),
       bookingStatus: "confirmed",
+      paymentSummary: {
+        methodType: userData.upiId ? "upi" : "online",
+        upiIdMasked: maskUpiId(userData.upiId),
+        gatewayPaymentId: razorpay_payment_id,
+      },
       paymentId: razorpay_payment_id,
       orderId: razorpay_order_id,
       bookingDate: new Date(),

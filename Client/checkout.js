@@ -121,11 +121,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const days = getDays();
     const items = normalizeCartItems(days);
     const amount = calculateTotal(items);
+    const upiId = document.getElementById("upiId")?.value.trim() || "";
 
     return {
       name: document.getElementById("fullName")?.value.trim() || "",
       email: document.getElementById("email")?.value.trim().toLowerCase() || "",
       phone: document.getElementById("phone")?.value.trim() || "",
+      upiId,
       location: document.getElementById("location")?.value.trim() || "",
       pickupDate: pickupDateEl?.value || "",
       returnDate: returnDateEl?.value || "",
@@ -159,6 +161,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!userData.amount || userData.amount <= 0) {
       return "Invalid booking amount.";
+    }
+
+    if (
+      userData.upiId &&
+      !/^[a-zA-Z0-9.\-_]{2,}@[a-zA-Z]{2,}$/i.test(userData.upiId)
+    ) {
+      return "Please enter a valid UPI ID or leave it blank.";
     }
 
     return null;

@@ -1,9 +1,10 @@
 const API_CONFIG = {
   BASE_URL: (() => {
     const hostname = window.location.hostname;
+    const protocol = window.location.protocol === "https:" ? "https:" : "http:";
 
     if (hostname === "localhost" || hostname === "127.0.0.1") {
-      return "http://localhost:5000";
+      return `${protocol}//${hostname}:5000`;
     }
 
     return window.location.origin;
