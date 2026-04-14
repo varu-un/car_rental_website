@@ -1,54 +1,79 @@
 const jwt = require("jsonwebtoken");
 
+function readCookieToken(req, name) {
+  return req.cookies?.[name] || null;
+}
+
+function verifyToken(token) {
+  return jwt.verify(token, process.env.JWT_SECRET);
+}
+
 function authRequired(req, res, next) {
   try {
-    const token = req.cookies.token;
-    console.log(
-      "[authRequired] Checking token, received:",
-      token ? "yes" : "no",
-    );
+    const token = readCookieToken(req, "token");
+
+    console.log("[authRequired] User token present:", !!token);
 
     if (!token) {
-      console.log("[authRequired] No token found, returning 401");
-      return res.status(401).json({ message: "Unauthorized" });
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log("[authRequired] Token verified for user:", decoded.email);
-    req.user = decoded;
-    next();
+    const decoded = verifyToken(token);
+
+    req.user = {
+      userId: decoded.userId,
+      email: decoded.email,
+      role: decoded.role || "user",
+    };
+
+    return next();
   } catch (error) {
-    console.log("[authRequired] Token verification failed:", error.message);
-    return res.status(401).json({ message: "Invalid or expired token" });
+    console.error("[authRequired] Verification failed:", error.message);
+    return res.status(401).json({
+      success: false,
+      message: "Invalid or expired token",
+    });
   }
 }
 
 function authAdmin(req, res, next) {
   try {
-    const token = req.cookies.adminToken;
-    console.log(
-      "[authAdmin] Checking adminToken, received:",
-      token ? "yes" : "no",
-    );
+    const token = readCookieToken(req, "adminToken");
+
+    console.log("[authAdmin] Admin token present:", !!token);
 
     if (!token) {
-      console.log("[authAdmin] No adminToken found, returning 401");
-      return res.status(401).json({ message: "Admin unauthorized" });
+      return res.status(401).json({
+        success: false,
+        message: "Admin unauthorized",
+      });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log("[authAdmin] Token verified for admin:", decoded.email);
+    const decoded = verifyToken(token);
 
     if (decoded.role !== "admin") {
-      console.log("[authAdmin] User role is not admin:", decoded.role);
-      return res.status(403).json({ message: "Admin access required" });
+      return res.status(403).json({
+        success: false,
+        message: "Admin access required",
+      });
     }
 
-    req.user = decoded;
-    next();
+    req.user = {
+      userId: decoded.userId,
+      email: decoded.email,
+      role: decoded.role,
+    };
+
+    return next();
   } catch (error) {
-    console.log("[authAdmin] Token verification failed:", error.message);
-    return res.status(401).json({ message: "Invalid or expired admin token" });
+    console.error("[authAdmin] Verification failed:", error.message);
+    return res.status(401).json({
+      success: false,
+      message: "Invalid or expired admin token",
+    });
   }
 }
 
