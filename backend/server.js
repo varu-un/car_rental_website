@@ -28,7 +28,24 @@ app.get("/test", (req, res) => {
 });
 // Admin auth check endpoint
 app.get("/admin/check-auth", authAdmin, (req, res) => {
-  res.json({ success: true, authenticated: true });
+  console.log("[/admin/check-auth] ✅ Admin authenticated:", req.user?.email);
+  res.json({ success: true, authenticated: true, user: req.user?.email });
+});
+
+// Debug endpoint to check cookies and auth without requiring auth
+app.get("/debug/cookies", (req, res) => {
+  console.log("[/debug/cookies] All cookies:", req.cookies);
+  console.log("[/debug/cookies] Has adminToken:", !!req.cookies.adminToken);
+  console.log("[/debug/cookies] Has token:", !!req.cookies.token);
+
+  res.json({
+    allCookies: Object.keys(req.cookies),
+    hasAdminToken: !!req.cookies.adminToken,
+    hasToken: !!req.cookies.token,
+    adminTokenLength: req.cookies.adminToken
+      ? req.cookies.adminToken.length
+      : 0,
+  });
 });
 
 // Debug endpoint to check cookies and auth
@@ -228,9 +245,13 @@ app.post("/admin-login", async (req, res) => {
       console.log("[/admin-login] Setting adminToken for user:", admin.email);
       res.cookie("adminToken", token, cookieOptions);
 
+      console.log("[/admin-login] ✅ Cookie set successfully");
+      console.log("[/admin-login] Returning success response");
+
       return res.json({
         success: true,
         message: "Admin login successful",
+        token: token, // Also return token in response for debugging
       });
     }
 
@@ -363,6 +384,53 @@ app.get("/debug/all-bookings", async (req, res) => {
   } catch (error) {
     console.error("[/debug/all-bookings] Error:", error);
     res.status(500).json({ message: "Error fetching debug info" });
+  }
+});
+
+// Test endpoint to create a booking manually (for debugging)
+app.post("/debug/test-booking", authRequired, async (req, res) => {
+  try {
+    console.log(
+      "[/debug/test-booking] Creating test booking for user:",
+      req.user.userId,
+    );
+
+    const testBooking = await Booking.create({
+      userId: req.user.userId,
+      name: "Test User",
+      email: req.user.email,
+      phone: "9999999999",
+      location: "Test City",
+      pickupDate: "2026-04-20",
+      returnDate: "2026-04-25",
+      days: 5,
+      cars: [
+        {
+          id: "1",
+          name: "Test Car",
+          price: 1000,
+          quantity: 1,
+          image: "test.jpg",
+        },
+      ],
+      totalCars: 1,
+      amount: 5000,
+      bookingStatus: "confirmed",
+      paymentId: "test_pay_12345",
+      orderId: "test_ord_12345",
+      bookingDate: new Date(),
+    });
+
+    console.log(
+      "[/debug/test-booking] ✅ Test booking created:",
+      testBooking._id,
+    );
+    res.json({ success: true, booking: testBooking });
+  } catch (error) {
+    console.error("[/debug/test-booking] ❌ Error:", error);
+    res
+      .status(500)
+      .json({ message: "Error creating test booking: " + error.message });
   }
 });
 
@@ -545,25 +613,44 @@ app.post("/verify-payment", authRequired, async (req, res) => {
 
 app.get("/admin/bookings", authAdmin, async (req, res) => {
   try {
-    console.log("Loading admin bookings...");
-    const data = await Booking.find().sort({ createdAt: -1 });
-    console.log("Found admin bookings:", data.length);
+    console.log(
+      "[/admin/bookings] ========== LOADING ADMIN BOOKINGS ==========",
+    );
+    console.log("[/admin/bookings] Admin user:", req.user?.email);
+
+    const data = await Booking.find().sort({ createdAt: -1 }).lean();
+    console.log("[/admin/bookings] Found admin bookings:", data.length);
+
     res.json({
       success: true,
       count: data.length,
       bookings: data,
     });
   } catch (error) {
-    console.error("Fetch bookings error:", error);
-    res.status(500).json({ message: "Failed to fetch bookings" });
+    console.error("[/admin/bookings] ❌ Error:", error.message);
+    res
+      .status(500)
+      .json({ message: "Failed to fetch bookings: " + error.message });
   }
 });
 
 app.get("/analytics/summary", authAdmin, async (req, res) => {
   try {
-    console.log("Loading summary analytics...");
-    const bookings = await Booking.find();
-    console.log("Found bookings:", bookings.length);
+    console.log(
+      "[/analytics/summary] ========== LOADING ANALYTICS SUMMARY ==========",
+    );
+    console.log("[/analytics/summary] Admin user:", req.user?.email);
+
+    const bookings = await Booking.find().lean();
+    console.log("[/analytics/summary] Found bookings:", bookings.length);
+
+    if (bookings.length > 0) {
+      console.log("[/analytics/summary] Sample booking:", {
+        name: bookings[0].name,
+        amount: bookings[0].amount,
+        totalCars: bookings[0].totalCars,
+      });
+    }
 
     const totalRevenue = bookings.reduce(
       (sum, item) => sum + (item.amount || 0),
@@ -579,6 +666,13 @@ app.get("/analytics/summary", authAdmin, async (req, res) => {
 
     const avgBookingValue = totalBookings ? totalRevenue / totalBookings : 0;
 
+    console.log("[/analytics/summary] ✅ Summary calculated:", {
+      totalRevenue,
+      totalBookings,
+      totalCarsRented,
+      avgBookingValue,
+    });
+
     res.json({
       success: true,
       totalRevenue: Math.round(totalRevenue),
@@ -587,16 +681,25 @@ app.get("/analytics/summary", authAdmin, async (req, res) => {
       avgBookingValue: Math.round(avgBookingValue),
     });
   } catch (error) {
-    console.error("Summary analytics error:", error);
-    res.status(500).json({ message: "Failed to load summary analytics" });
+    console.error("[/analytics/summary] ❌ Error:", error.message);
+    res
+      .status(500)
+      .json({ message: "Failed to load summary analytics: " + error.message });
   }
 });
 
 app.get("/analytics/monthly-revenue", authAdmin, async (req, res) => {
   try {
-    console.log("Loading monthly revenue...");
-    const bookings = await Booking.find();
-    console.log("Found bookings for monthly revenue:", bookings.length);
+    console.log(
+      "[/analytics/monthly-revenue] ========== LOADING MONTHLY REVENUE ==========",
+    );
+    console.log("[/analytics/monthly-revenue] Admin user:", req.user?.email);
+
+    const bookings = await Booking.find().lean();
+    console.log(
+      "[/analytics/monthly-revenue] Found bookings:",
+      bookings.length,
+    );
 
     const monthlyMap = {};
 
@@ -616,18 +719,27 @@ app.get("/analytics/monthly-revenue", authAdmin, async (req, res) => {
     const labels = Object.keys(monthlyMap).sort();
     const values = labels.map((label) => Math.round(monthlyMap[label]));
 
+    console.log("[/analytics/monthly-revenue] ✅ Monthly data:", {
+      labels,
+      values,
+    });
+
     res.json({ success: true, labels, values });
   } catch (error) {
-    console.error("Monthly revenue error:", error);
-    res.status(500).json({ message: "Failed to load monthly revenue" });
+    console.error("[/analytics/monthly-revenue] ❌ Error:", error.message);
+    res
+      .status(500)
+      .json({ message: "Failed to load monthly revenue: " + error.message });
   }
 });
 
 app.get("/analytics/top-cars", authAdmin, async (req, res) => {
   try {
-    console.log("Loading top cars...");
-    const bookings = await Booking.find();
-    console.log("Found bookings for top cars:", bookings.length);
+    console.log("[/analytics/top-cars] ========== LOADING TOP CARS ==========");
+    console.log("[/analytics/top-cars] Admin user:", req.user?.email);
+
+    const bookings = await Booking.find().lean();
+    console.log("[/analytics/top-cars] Found bookings:", bookings.length);
 
     const carMap = {};
 
@@ -648,14 +760,18 @@ app.get("/analytics/top-cars", authAdmin, async (req, res) => {
       .sort((a, b) => b[1] - a[1])
       .slice(0, 10);
 
+    console.log("[/analytics/top-cars] ✅ Top cars:", sortedCars);
+
     res.json({
       success: true,
       labels: sortedCars.map(([name]) => name),
       values: sortedCars.map(([, count]) => count),
     });
   } catch (error) {
-    console.error("Top cars error:", error);
-    res.status(500).json({ message: "Failed to load top cars analytics" });
+    console.error("[/analytics/top-cars] ❌ Error:", error.message);
+    res
+      .status(500)
+      .json({ message: "Failed to load top cars analytics: " + error.message });
   }
 });
 

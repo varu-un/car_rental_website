@@ -1,16 +1,39 @@
 document.addEventListener("DOMContentLoaded", async () => {
+  console.log("[admin.js] Admin dashboard loading...");
+
   // Check if admin is authenticated
   const checkAuth = async () => {
     try {
-      const { ok } = await apiCall("/admin/check-auth");
+      console.log("[admin.js] Checking admin authentication...");
+      const { ok, status, data } = await apiCall("/admin/check-auth");
+
+      console.log("[admin.js] Auth check response:", {
+        ok,
+        status,
+        message: data?.message,
+        authenticated: data?.authenticated,
+      });
+
       if (!ok) {
-        window.location.href = "admin-login.html";
+        console.error(
+          "[admin.js] ❌ Admin not authenticated (status:",
+          status + ")",
+        );
+        console.error("[admin.js] Auth response:", data);
+
+        // For debugging: check cookies
+        console.log("[admin.js] Document cookies:", document.cookie);
+
+        console.log("[admin.js] Redirecting to admin-login");
+        window.location.href = "/admin-login.html";
         return false;
       }
+      console.log("[admin.js] ✅ Admin authenticated");
       return true;
     } catch (error) {
-      console.error("Auth check error:", error);
-      window.location.href = "admin-login.html";
+      console.error("[admin.js] Auth check error:", error);
+      console.log("[admin.js] Redirecting to admin-login (error)");
+      window.location.href = "/admin-login.html";
       return false;
     }
   };
@@ -29,6 +52,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   logoutBtn.addEventListener("click", async () => {
+    console.log("[admin.js] Logging out...");
     await apiCall("/admin-logout", { method: "POST" });
     window.location.href = "admin-login.html";
   });
@@ -97,6 +121,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   try {
+    console.log("[admin.js] Loading analytics data...");
     const [
       summaryResult,
       monthlyResult,
@@ -111,34 +136,42 @@ document.addEventListener("DOMContentLoaded", async () => {
       apiCall("/admin/newsletters"),
     ]);
 
+    console.log("[admin.js] Analytics responses:", {
+      summary: summaryResult.ok,
+      monthly: monthlyResult.ok,
+      topCars: topCarsResult.ok,
+      bookings: bookingsResult.ok,
+    });
+
     if (
       !summaryResult.ok ||
       !monthlyResult.ok ||
       !topCarsResult.ok ||
       !bookingsResult.ok
     ) {
-      console.error("Analytics endpoints failed:", {
+      console.error("[admin.js] ❌ Some analytics endpoints failed:", {
         summary: {
           ok: summaryResult.ok,
           status: summaryResult.status,
-          data: summaryResult.data,
+          message: summaryResult.data?.message,
         },
         monthly: {
           ok: monthlyResult.ok,
           status: monthlyResult.status,
-          data: monthlyResult.data,
+          message: monthlyResult.data?.message,
         },
         topCars: {
           ok: topCarsResult.ok,
           status: topCarsResult.status,
-          data: topCarsResult.data,
+          message: topCarsResult.data?.message,
         },
         bookings: {
           ok: bookingsResult.ok,
           status: bookingsResult.status,
-          data: bookingsResult.data,
+          message: bookingsResult.data?.message,
         },
       });
+      alert("Failed to load dashboard data. Check console for details.");
       throw new Error("Failed to load dashboard data");
     }
 
@@ -153,6 +186,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     const bookings = bookingsData.bookings || bookingsData;
 
     allBookings = bookings;
+
+    console.log("[admin.js] ✅ Dashboard data loaded successfully:", {
+      totalRevenue: summary.totalRevenue,
+      totalBookings: summary.totalBookings,
+      totalCarsRented: summary.totalCarsRented,
+      avgBookingValue: summary.avgBookingValue,
+      bookingsCount: bookings.length,
+    });
 
     document.getElementById("totalRevenue").textContent = formatAmount(
       summary.totalRevenue,
@@ -287,7 +328,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       },
     });
   } catch (error) {
-    console.error("Admin dashboard error:", error);
-    alert("Failed to load analytics dashboard.");
+    console.error("[admin.js] ❌ Dashboard error:", error.message);
+    console.error("[admin.js] Full error:", error);
+    alert("Failed to load analytics dashboard: " + error.message);
   }
 });
