@@ -77,18 +77,6 @@
               </div>
 
               <div class="input-group">
-                <label for="upiId">UPI ID</label>
-                <input
-                  type="text"
-                  id="upiId"
-                  placeholder="Enter your UPI ID (optional)"
-                />
-                <small class="input-help">
-                  Example: `name@oksbi` or `name@upi`
-                </small>
-              </div>
-
-              <div class="input-group">
                 <label for="location">Pickup Location</label>
                 <input
                   type="text"
@@ -107,6 +95,29 @@
                 <div class="input-group">
                   <label for="returnDate">Return Date</label>
                   <input type="date" id="returnDate" required />
+                </div>
+              </div>
+
+              <div class="payment-method-group">
+                <label>Payment Method</label>
+                <div class="payment-methods">
+                  <label class="payment-option">
+                    <input type="radio" name="paymentMethod" value="upi" />
+                    <span class="method-label">UPI</span>
+                    <span class="method-desc">Pay using UPI ID</span>
+                  </label>
+                  <label class="payment-option">
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="card"
+                      checked
+                    />
+                    <span class="method-label">Card/Wallet</span>
+                    <span class="method-desc"
+                      >Credit/Debit Card, Wallets & More</span
+                    >
+                  </label>
                 </div>
               </div>
 

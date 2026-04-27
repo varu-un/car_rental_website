@@ -720,6 +720,8 @@ app.post("/verify-payment", authRequired, async (req, res) => {
       });
     }
 
+    const paymentMethod = userData.paymentMethod || "card";
+
     const booking = await Booking.create({
       userId: req.user.userId,
       name: userData.name || "",
@@ -734,8 +736,7 @@ app.post("/verify-payment", authRequired, async (req, res) => {
       amount: parseAmount(userData.amount),
       bookingStatus: "confirmed",
       paymentSummary: {
-        methodType: userData.upiId ? "upi" : "online",
-        upiIdMasked: maskUpiId(userData.upiId),
+        methodType: paymentMethod,
         gatewayPaymentId: razorpay_payment_id,
       },
       paymentId: razorpay_payment_id,
@@ -905,7 +906,7 @@ app.get("/admin-login.html", (req, res) => {
   res.sendFile(path.join(__dirname, "../Client/admin-login.html"));
 });
 
-app.get("/admin.html", (req, res) => {
+app.get("/admin.html", authAdmin, (req, res) => {
   res.sendFile(path.join(__dirname, "../Client/admin.html"));
 });
 
@@ -933,5 +934,3 @@ if (require.main === module) {
 }
 
 module.exports = app;
-
-

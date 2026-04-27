@@ -12,6 +12,8 @@ document.addEventListener("DOMContentLoaded", () => {
   if (pickupDateEl) pickupDateEl.min = today;
   if (returnDateEl) returnDateEl.min = today;
 
+  /* ==================== CART & CHECKOUT ==================== */
+
   function formatCurrency(value) {
     return `₹${Number(value || 0).toFixed(2)}`;
   }
@@ -121,13 +123,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const days = getDays();
     const items = normalizeCartItems(days);
     const amount = calculateTotal(items);
-    const upiId = document.getElementById("upiId")?.value.trim() || "";
+    const paymentMethod =
+      document.querySelector('input[name="paymentMethod"]:checked')?.value ||
+      "card";
 
     return {
       name: document.getElementById("fullName")?.value.trim() || "",
       email: document.getElementById("email")?.value.trim().toLowerCase() || "",
       phone: document.getElementById("phone")?.value.trim() || "",
-      upiId,
+      paymentMethod,
       location: document.getElementById("location")?.value.trim() || "",
       pickupDate: pickupDateEl?.value || "",
       returnDate: returnDateEl?.value || "",
@@ -161,13 +165,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!userData.amount || userData.amount <= 0) {
       return "Invalid booking amount.";
-    }
-
-    if (
-      userData.upiId &&
-      !/^[a-zA-Z0-9.\-_]{2,}@[a-zA-Z]{2,}$/i.test(userData.upiId)
-    ) {
-      return "Please enter a valid UPI ID or leave it blank.";
     }
 
     return null;
